@@ -22,18 +22,13 @@
   .wrap{max-width:1500px;margin:0 auto;padding:24px 24px 52px}
   .title-bar{display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap;
     padding:14px 16px 12px;border-radius:12px;margin-bottom:16px;
-    background:linear-gradient(135deg,var(--scb-l) 0%,#fff 55%);
-    border:1px solid #e8dff5;border-bottom:2px solid var(--scb)}
-  .arrow{flex:none;margin-top:6px;width:0;height:0;
-    border-top:9px solid transparent;border-bottom:9px solid transparent;border-left:13px solid var(--scb)}
+    background:#fff;border:1px solid var(--hair);border-bottom:2px solid var(--scb)}
+  .arrow{flex:none;margin-top:10px;width:0;height:0;
+    border-top:10px solid transparent;border-bottom:10px solid transparent;border-left:15px solid var(--scb)}
   .tt{flex:1;min-width:260px}
   .eyebrow{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 4px}
-  h1{font-size:24px;font-weight:700;letter-spacing:-.005em;margin:0}
+  h1{font-size:32px;font-weight:700;letter-spacing:-.01em;margin:0}
   .sub{font-size:13px;font-weight:700;color:var(--scb);margin:4px 0 0}
-  .tag{display:inline-flex;border:1px solid var(--ink);border-radius:999px;overflow:hidden;
-    font-size:11px;font-weight:700;letter-spacing:.04em;flex:none;margin-top:3px}
-  .tag span{padding:4px 12px;border-right:1px solid var(--ink);background:#fff;white-space:nowrap}
-  .tag span:last-child{border-right:none}
   .card{border:1px solid var(--hair);border-radius:12px;padding:16px 18px 18px;
     box-shadow:0 1px 3px rgba(79,45,127,.06)}
   .controls{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 4px}
@@ -81,7 +76,6 @@
       <h1>Stocks, bonds &amp; cash over the long run</h1>
       <p class="sub" id="sub">$10,000 invested when the S&amp;P 500 began in 1957, held through every crisis since</p>
     </div>
-    <span class="tag"><span>Ratio scale</span><span>Illustrative</span></span>
   </div>
 
   <div class="card">
@@ -774,10 +768,13 @@
   }
   function applyGest(e){
     var d=tdist(e)||1, s=d/gest.d0;
+    if(Math.abs(s-1) < 0.06) s=1;      // small distance change = a slide -> pure pan, no phantom zoom
     var mx=(e.touches[0].clientX+e.touches[1].clientX)/2,
         my=(e.touches[0].clientY+e.touches[1].clientY)/2;
     var k=W/gest.rw;
-    gest.s=s; gest.tx=(mx-gest.mx0)*k; gest.ty=(my-gest.my0)*k;
+    gest.s=s;
+    gest.tx=(mx-gest.mx0)*k;
+    gest.ty=(s===1)?0:(my-gest.my0)*k;  // don't drift vertically while purely panning
     scene.setAttribute("transform",
       "translate("+gest.tx.toFixed(2)+" "+gest.ty.toFixed(2)+") "+
       "translate("+gest.ox.toFixed(2)+" "+gest.oy.toFixed(2)+") "+
