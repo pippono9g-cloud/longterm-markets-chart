@@ -429,30 +429,17 @@
   }
 
   var s1=document.createElement("span");s1.className="lbl";s1.style.marginLeft="12px";s1.textContent="Y-axis";cbox.appendChild(s1);
-  var bDollar=mkBtn("$ value","Dollar value of the investment"),
-      bPct=mkBtn("% return","Cumulative % return since the left edge of the visible window");
+  var bDollar=mkBtn("$ from 1957","Dollar value of the original $10,000 invested in 1957"),
+      bPct=mkBtn("% in window","Cumulative % return since the left edge of the visible window (each line restarts at 0%)");
   bDollar.setAttribute("aria-pressed","true");
   function setUnit(pct){
-    state.pct=pct; if(pct)state.rebase=true;
+    state.pct=pct; state.rebase=pct;   // % mode = rebased to the window's left edge; $ mode = from 1957
     bDollar.setAttribute("aria-pressed",pct?"false":"true");
     bPct.setAttribute("aria-pressed",pct?"true":"false");
-    bWin.disabled=pct; b1957.disabled=pct;
-    if(pct){ setFrom(true); } render();
+    render();
   }
   bDollar.addEventListener("click",function(){setUnit(false);});
   bPct.addEventListener("click",function(){setUnit(true);});
-
-  var s2=document.createElement("span");s2.className="lbl";s2.style.marginLeft="12px";s2.textContent="From";cbox.appendChild(s2);
-  var b1957=mkBtn("1957","Grow from the original $10,000 in 1957"),
-      bWin=mkBtn("window start","Restart every line at $10,000 at the left edge, to compare growth within the chosen window");
-  b1957.setAttribute("aria-pressed","true");
-  function setFrom(reb){
-    state.rebase=reb;
-    b1957.setAttribute("aria-pressed",reb?"false":"true");
-    bWin.setAttribute("aria-pressed",reb?"true":"false");
-  }
-  b1957.addEventListener("click",function(){ if(state.pct)return; setFrom(false); render();});
-  bWin.addEventListener("click",function(){ if(state.pct)return; setFrom(true); render();});
 
   var curX,curY,curDomain,curSc,curI0; // closures updated per render, used by hover
 
@@ -778,7 +765,7 @@
   /* ============ FOOTNOTE ==================================== */
   document.getElementById("foot").innerHTML=
     '<strong>How to read this.</strong> Illustrative growth of a single $10,000 investment made when the S&amp;P 500 launched (year-end 1957) and held through Sep 1, 2026, on a <strong>ratio (log) scale</strong>. '
-    +'Zoom with the time-frame buttons or the mouse wheel (about the cursor); pan by dragging or with a two-finger / horizontal swipe. The y-axis rescales to the visible window, and a roughly <strong>constant number of events stays on screen at every zoom level</strong> &mdash; drawn from a curated importance-ranked index of ~115 market events (default '+DEFAULT_EVENT_COUNT+' on screen), most significant first, with finer detail filling in as you zoom into a period. Hover or tap the chart to read each asset&rsquo;s value on its own line. '
+    +'Zoom with the time-frame buttons or the mouse wheel (about the cursor); pan by dragging or with a two-finger / horizontal swipe. The y-axis rescales to the visible window, and a roughly <strong>constant number of events stays on screen at every zoom level</strong> &mdash; drawn from a curated importance-ranked index of ~150 market events (at least one per year) (default '+DEFAULT_EVENT_COUNT+' on screen), most significant first, with finer detail filling in as you zoom into a period. Hover or tap the chart to read each asset&rsquo;s value on its own line. '
     +'Stocks are the S&amp;P 500 <strong>price index</strong> (39.99 &rarr; 7,631.47), price return only. Bonds and cash are <strong>total return</strong>, compounded year by year from published annual returns: bonds splice Ibbotson U.S. government bonds (1958&ndash;1975) into the Bloomberg U.S. Aggregate (1976&ndash;present); cash is 30-day U.S. Treasury bills. Because stocks exclude dividends while bonds and cash include income, the equity line understates stocks&rsquo; true lead. Past performance is not indicative of future results. '
     +'<br>Sources: S&amp;P Dow Jones Indices; Bloomberg Index Services; Ibbotson / Morningstar SBBI; U.S. Treasury; Federal Reserve (FRED). Annual-return figures are approximate. Data verified Sep 2026.';
 })();
