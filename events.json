@@ -1,5 +1,13 @@
 [
 [
+1957.2,
+"Treaty of Rome: Europe's common market is founded",
+"Mar 1957",
+"policy",
+"globe",
+5
+],
+[
 1957.8,
 "1957-58 recession &amp; sell-off",
 "Oct 1957",
@@ -32,11 +40,27 @@
 3
 ],
 [
+1960.7,
+"OPEC founded",
+"Sep 1960",
+"policy",
+"oil",
+5
+],
+[
 1960.86,
 "Kennedy elected; 'New Frontier' optimism",
 "Nov 1960",
 "milestone",
 "ballot",
+5
+],
+[
+1961.62,
+"Berlin Wall goes up",
+"Aug 1961",
+"policy",
+"globe",
 5
 ],
 [
@@ -144,6 +168,14 @@
 2
 ],
 [
+1972.13,
+"Nixon visits China; the opening begins",
+"Feb 1972",
+"policy",
+"globe",
+5
+],
+[
 1972.95,
 "Nifty Fifty peak",
 "Jan 1973",
@@ -232,6 +264,14 @@
 4
 ],
 [
+1978.98,
+"China begins 'reform and opening'",
+"Dec 1978",
+"policy",
+"globe",
+4
+],
+[
 1979.63,
 "Volcker named Fed chair",
 "Aug 1979",
@@ -304,6 +344,14 @@
 3
 ],
 [
+1985.2,
+"Gorbachev takes power; perestroika",
+"Mar 1985",
+"policy",
+"globe",
+5
+],
+[
 1985.7,
 "Plaza Accord (dollar devaluation)",
 "Sep 1985",
@@ -318,6 +366,14 @@
 "milestone",
 "rally",
 4
+],
+[
+1987.13,
+"Louvre Accord (stabilise the dollar)",
+"Feb 1987",
+"policy",
+"stamp",
+5
 ],
 [
 1987.4,
@@ -350,6 +406,14 @@
 "shock",
 "crash",
 3
+],
+[
+1989.86,
+"Berlin Wall falls",
+"Nov 1989",
+"policy",
+"globe",
+4
 ],
 [
 1989.95,
@@ -392,6 +456,14 @@
 3
 ],
 [
+1991.98,
+"USSR dissolves; Cold War ends",
+"Dec 1991",
+"policy",
+"globe",
+4
+],
+[
 1992.72,
 "Black Wednesday; UK crashes out of the ERM",
 "Sep 1992",
@@ -424,6 +496,14 @@
 4
 ],
 [
+1994.01,
+"NAFTA takes effect",
+"Jan 1994",
+"policy",
+"stamp",
+4
+],
+[
 1994.13,
 "Fed surprise hike; global bond rout",
 "Feb 1994",
@@ -438,6 +518,14 @@
 "shock",
 "globe",
 3
+],
+[
+1995.01,
+"World Trade Organization established",
+"Jan 1995",
+"policy",
+"stamp",
+5
 ],
 [
 1995.13,
@@ -502,6 +590,14 @@
 "policy",
 "percent",
 3
+],
+[
+1999.02,
+"The euro is launched (11 nations)",
+"Jan 1999",
+"policy",
+"stamp",
+4
 ],
 [
 1999.45,
@@ -584,6 +680,14 @@
 3
 ],
 [
+2001.96,
+"China joins the WTO ('the China shock')",
+"Dec 2001",
+"policy",
+"stamp",
+3
+],
+[
 2002.53,
 "WorldCom bankruptcy; accounting scandals",
 "Jul 2002",
@@ -621,6 +725,14 @@
 "2003",
 "milestone",
 "rally",
+5
+],
+[
+2004.34,
+"EU enlargement: 10 new members",
+"May 2004",
+"policy",
+"globe",
 5
 ],
 [
@@ -1000,6 +1112,14 @@
 4
 ],
 [
+2020.01,
+"Brexit: the UK formally leaves the EU",
+"Jan 2020",
+"policy",
+"globe",
+5
+],
+[
 2020.19,
 "COVID-19 crash (-34% in 33 days)",
 "Mar 2020",
@@ -1150,6 +1270,14 @@
 "shock",
 "star",
 3
+],
+[
+2023.77,
+"Israel-Hamas war begins; oil risk premium",
+"Oct 2023",
+"shock",
+"warning",
+4
 ],
 [
 2023.8,
