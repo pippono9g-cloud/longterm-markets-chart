@@ -65,9 +65,7 @@
 <body>
 <div class="wrap">
   <div class="title-bar">
-    <p class="eyebrow">1957 &ndash; 2026 &nbsp;&bull;&nbsp; U.S. dollars &nbsp;&bull;&nbsp; growth of a single $10,000 investment</p>
     <h1>Stocks, bonds &amp; cash over the long run</h1>
-    <p class="sub" id="sub">$10,000 invested when the S&amp;P 500 began in 1957, held through every crisis since</p>
   </div>
 
   <div class="card">
@@ -464,7 +462,7 @@
   }
 
   var s1=document.createElement("span");s1.className="lbl";s1.style.marginLeft="12px";s1.textContent="Y-axis";cbox.appendChild(s1);
-  var uBtn=mkBtn("","Switch the y-axis between % return (since the left edge of the visible window) and $ value (from 1957). Click to toggle.");
+  var uBtn=mkBtn("","Switch the y-axis: % return, or $ value of $10,000 invested at the left edge of the visible window. Click to toggle.");
   uBtn.classList.add("switch");
   function paintUnit(){
     uBtn.innerHTML = state.pct
@@ -472,7 +470,7 @@
       : '<span>% return</span><b>$ value</b>';
   }
   uBtn.addEventListener("click",function(){
-    state.pct=!state.pct; state.rebase=state.pct;
+    state.pct=!state.pct;                 // both modes start from the visible window's left edge
     paintUnit(); render();
   });
   paintUnit();
@@ -664,12 +662,6 @@
     scene=svg.firstElementChild;
 
     syncYearInputs();
-    if(fast) return;
-    // sub line + event count note
-    var cnt=vis.length, full=curDomain[0]<=START+0.05 && curDomain[1]>=END-0.05;
-    document.getElementById("sub").innerHTML = full
-      ? "$10,000 invested when the S&amp;P 500 began in 1957 &mdash; "+cnt+" defining events marked"
-      : fmtDate(curDomain[0])+" &ndash; "+fmtDate(curDomain[1])+" &mdash; "+cnt+" event"+(cnt===1?"":"s")+" in view (scroll-wheel or drag to explore; type a year range above)";
   }
 
   /* ============ HOVER / CROSSHAIR ============================ */
@@ -900,7 +892,7 @@
 
   /* ============ FOOTNOTE ==================================== */
   document.getElementById("foot").innerHTML=
-    '<strong>How to read this.</strong> Illustrative growth of a single $10,000 investment made when the S&amp;P 500 launched (year-end 1957) and held through Sep 1, 2026, on a <strong>ratio (log) scale</strong>. '
+    '<strong>How to read this.</strong> Illustrative growth of a single $10,000 invested at the left edge of the window you are viewing (so the three lines always start together), drawn on a <strong>ratio (log) scale</strong>. Toggle the y-axis between that dollar value and cumulative % return. '
     +'Zoom with the time-frame buttons or the mouse wheel (about the cursor); pan by dragging (desktop). On a touch screen: one finger reads the values, two fingers pinch to zoom / slide to pan, double-tap zooms out. The y-axis rescales to the visible window, and a roughly <strong>constant number of events stays on screen at every zoom level</strong> &mdash; drawn from a curated importance-ranked index of ~150 market events (at least one per year) (default '+DEFAULT_EVENT_COUNT+' on screen), most significant first, with finer detail filling in as you zoom into a period. Hover or tap the chart to read each asset&rsquo;s value on its own line. '
     +'Stocks are the S&amp;P 500 <strong>monthly price</strong> (40.33 in Dec 1957 &rarr; 7,711 in Aug 2026), price return only. Cash is the 3-month U.S. Treasury-bill rate, compounded monthly. Bonds are the U.S. investment-grade aggregate: from Sep 2003 the <strong>actual monthly total return of the AGG ETF</strong>; before that, modelled from the 10-year Treasury yield and <strong>calibrated to the published annual return for each year</strong> (so 2008, 2013 and the &minus;13% of 2022 are the real figures). Because stocks exclude dividends while bonds and cash include income, the equity line understates stocks&rsquo; true lead. Past performance is not indicative of future results. '
     +'<br>Sources: S&amp;P Dow Jones Indices / R. Shiller (S&amp;P 500 monthly); FRED (TB3MS, GS10); iShares / Yahoo Finance (AGG total return); annual bond returns from Ibbotson / Morningstar. Monthly data through Aug 2026.';
