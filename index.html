@@ -48,6 +48,11 @@
   .tf-btn.switch b,.tf-btn.switch span{padding:3px 11px;border-radius:999px;font-size:12.5px;line-height:1.35;font-weight:700}
   .tf-btn.switch b{background:var(--ink);color:#fff}
   .tf-btn.switch span{color:var(--ink-mute);font-weight:600}
+  .yr-in{font:inherit;font-size:12.5px;font-weight:700;width:56px;text-align:center;color:var(--ink);
+    border:1.5px solid var(--ink);border-radius:8px;padding:4px 6px;background:#fff}
+  .yr-in::placeholder{color:var(--ink-mute);font-weight:400}
+  .yr-in:focus-visible{outline:2px solid var(--scb);outline-offset:1px}
+  .controls .dash{color:var(--ink-mute);font-weight:700;margin:0 -2px}
   figure{margin:12px 0 0;position:relative}
   svg{display:block;width:100%;height:auto;overflow:visible;touch-action:pan-y;cursor:crosshair;
     -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
@@ -428,6 +433,37 @@
       render();});
     return b;
   });
+  // year-range inputs (From YYYY to YYYY)
+  var YMIN=Math.ceil(START), YMAX=Math.floor(END);
+  var s0lbl=document.createElement("span");s0lbl.className="lbl";s0lbl.style.marginLeft="12px";s0lbl.textContent="Years";cbox.appendChild(s0lbl);
+  function mkYr(ph){var e=document.createElement("input");e.className="yr-in";e.type="text";
+    e.inputMode="numeric";e.maxLength=4;e.setAttribute("aria-label",ph);e.placeholder=ph;cbox.appendChild(e);return e;}
+  var yrFrom=mkYr("from");
+  var dash=document.createElement("span");dash.className="dash";dash.textContent="–";cbox.appendChild(dash);
+  var yrTo=mkYr("to");
+  var yrGo=mkBtn("Show","Show the chart for the typed year range");
+  function applyYears(){
+    var f=parseInt((yrFrom.value||"").replace(/\D/g,""),10);
+    var t=parseInt((yrTo.value||"").replace(/\D/g,""),10);
+    if(isNaN(f)) f=Math.round(state.dom[0]);
+    if(isNaN(t)) t=Math.round(state.dom[1]);
+    f=Math.min(Math.max(f,YMIN),YMAX-1);
+    t=Math.min(Math.max(t,f+1),YMAX);
+    state.dom=[Math.max(START, f), (t>=YMAX ? END : Math.min(END, t+0.999))];
+    syncFrButtons(); syncYearInputs(); render();
+  }
+  [yrFrom,yrTo].forEach(function(e){
+    e.addEventListener("input",function(){e.value=e.value.replace(/\D/g,"").slice(0,4);});
+    e.addEventListener("keydown",function(ev){if(ev.key==="Enter")applyYears();});
+    e.addEventListener("blur",applyYears);
+  });
+  yrGo.addEventListener("click",applyYears);
+  function syncYearInputs(){
+    var d=curDomain||state.dom;
+    if(document.activeElement!==yrFrom) yrFrom.value=Math.max(YMIN,Math.round(d[0]));
+    if(document.activeElement!==yrTo)   yrTo.value  =(d[1]>=END-0.05)?YMAX:Math.min(YMAX,Math.round(d[1]-0.5));
+  }
+
   function syncFrButtons(){
     // highlight the preset that matches the current window, else none
     var span=state.dom[1]-state.dom[0], atEnd=Math.abs(state.dom[1]-END)<0.4;
@@ -642,6 +678,7 @@
     document.getElementById("sub").innerHTML = full
       ? "$10,000 invested when the S&amp;P 500 began in 1957 &mdash; "+cnt+" defining events marked"
       : fmtDate(curDomain[0])+" &ndash; "+fmtDate(curDomain[1])+" &mdash; "+cnt+" events (about the same count at every zoom; scroll-wheel to zoom, smaller events appear as you look closer)";
+    syncYearInputs();
   }
 
   /* ============ HOVER / CROSSHAIR ============================ */
