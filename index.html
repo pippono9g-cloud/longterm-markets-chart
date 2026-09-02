@@ -36,13 +36,6 @@
   .tag span:last-child{border-right:none}
   .card{border:1px solid var(--hair);border-radius:12px;padding:16px 18px 18px;
     box-shadow:0 1px 3px rgba(79,45,127,.06)}
-  .stats{display:flex;flex-wrap:wrap;gap:12px;margin:0 0 16px}
-  .stat{border:1px solid var(--hair);border-radius:10px;padding:11px 15px 10px;min-width:190px;background:#fff}
-  .stat .k{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-mute);display:flex;align-items:center;gap:7px}
-  .stat .k::before{content:"";width:14px;height:3px;border-radius:2px;background:var(--c,var(--ink))}
-  .stat.eq{--c:var(--eq)} .stat.bond{--c:var(--bond)} .stat.cash{--c:var(--cash)}
-  .stat .v{font-size:21px;font-weight:700;margin-top:2px;font-variant-numeric:tabular-nums}
-  .stat .n{font-size:12px;color:var(--ink-soft);font-weight:400}
   .controls{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 4px}
   .controls .lbl{font-size:11.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-mute);margin-right:2px}
   .tf-btn{font:inherit;font-size:12.5px;font-weight:700;color:var(--ink-soft);background:#fff;
@@ -87,8 +80,6 @@
   </div>
 
   <div class="card">
-    <div class="stats" id="stats"></div>
-
     <div class="controls" id="controls">
       <span class="lbl">Time frame</span>
     </div>
@@ -120,10 +111,11 @@
 <script type="application/json" id="event-data">
 [
 [1957.80,"1957-58 recession &amp; sell-off","Oct 1957","shock","crash",2],
-[1958.60,"Sharp V-shaped recovery","1958","milestone","rally",5],
+[1958.55,"1958: S&amp;P +43%, one of its best years ever","1958","milestone","rally",4],
 [1960.30,"1960-61 recession","Apr 1960","shock","crash",3],
-[1961.95,"Kennedy elected; 'New Frontier' rally","1961","milestone","rally",5],
-[1962.40,"Kennedy Slide (-27%)","May 1962","shock","crash",1],
+[1960.86,"Kennedy elected; 'New Frontier' optimism","Nov 1960","milestone","ballot",5],
+[1961.90,"1961 bull peak (+23% year) before the Slide","Dec 1961","milestone","rally",5],
+[1962.46,"Kennedy Slide / 'Flash Crash of 1962' (-27%)","Jun 1962","shock","crash",1],
 [1962.80,"Cuban Missile Crisis","Oct 1962","shock","warning",3],
 [1963.90,"JFK assassination","Nov 1963","shock","warning",4],
 [1966.30,"1966 credit-crunch bear (-22%)","Aug 1966","shock","percent",2],
@@ -135,10 +127,13 @@
 [1972.95,"Nifty Fifty peak","Jan 1973","milestone","rally",3],
 [1973.80,"OPEC oil embargo; 1973-74 bear (-48%)","Oct 1973","shock","oil",1],
 [1974.60,"Nixon resigns","Aug 1974","shock","warning",4],
-[1974.95,"Bear-market bottom","Dec 1974","milestone","rally",2],
-[1975.40,"New York City fiscal crisis","1975","shock","warning",5],
+[1974.68,"ERISA signed; the IRA is created","Sep 1974","policy","stamp",4],
+[1974.76,"1973-74 bear-market bottom (S&amp;P -48%)","Oct 1974","milestone","rally",2],
+[1975.33,"'May Day': NYSE ends fixed commissions","May 1975","policy","stamp",4],
+[1975.62,"New York City fiscal crisis","Aug 1975","shock","warning",5],
 [1977.20,"1977-78 'stealth' bear (-19%)","Feb 1977","shock","crash",4],
-[1978.85,"Dollar crisis; Carter rescue package","Nov 1978","policy","percent",4],
+[1978.83,"Section 401(k) added to the tax code","Nov 1978","policy","stamp",4],
+[1978.90,"Dollar crisis; Carter rescue package","Nov 1978","policy","percent",4],
 [1979.63,"Volcker named Fed chair","Aug 1979","policy","percent",1],
 [1979.90,"Second oil shock (Iran)","Nov 1979","shock","oil",2],
 [1980.20,"Inflation peaks at 14.8%; brief recession","Mar 1980","shock","tag",1],
@@ -148,7 +143,7 @@
 [1982.65,"Mexico default; LatAm debt crisis","Aug 1982","shock","globe",3],
 [1984.35,"Continental Illinois; 'too big to fail'","May 1984","shock","bank",3],
 [1985.70,"Plaza Accord (dollar devaluation)","Sep 1985","policy","stamp",3],
-[1987.20,"1987 melt-up","Feb 1987","milestone","rally",4],
+[1987.40,"1987 melt-up: +39% into the August peak","Spring 1987","milestone","rally",4],
 [1987.80,"Black Monday (-22.6% in a day)","Oct 19, 1987","shock","crash",1],
 [1989.80,"Oct 1989 mini-crash (UAL deal fails)","Oct 1989","shock","crash",3],
 [1989.95,"S&amp;L crisis peak; RTC created","1989","shock","bank",3],
@@ -167,6 +162,7 @@
 [1998.71,"LTCM near-collapse; Fed-brokered rescue","Sep 1998","shock","warning",2],
 [1998.80,"Fed emergency cuts; V-shaped rebound","Oct 1998","policy","percent",3],
 [1999.45,"Fed starts hiking; Y2K liquidity","Jun 1999","policy","rateup",4],
+[1999.87,"Glass-Steagall repealed (Gramm-Leach-Bliley)","Nov 1999","policy","stamp",3],
 [1999.95,"Dot-com blow-off top","Dec 1999","milestone","monitor",3],
 [2000.23,"Dot-com peak (Mar 24, 2000)","Mar 2000","milestone","monitor",1],
 [2000.85,"Nasdaq -40%; 'tech wreck'","Nov 2000","shock","crash",3],
@@ -191,6 +187,7 @@
 [2009.19,"Market bottom (Mar 9, 2009)","Mar 2009","milestone","rally",1],
 [2010.35,"Flash Crash (-9% intraday)","May 2010","shock","bolt",3],
 [2010.42,"Greece bailout #1; euro crisis","May 2010","shock","globe",3],
+[2010.55,"Dodd-Frank Act signed","Jul 2010","policy","stamp",3],
 [2010.85,"Fed announces QE2","Nov 2010","policy","percent",3],
 [2011.18,"Arab Spring; Japan quake; oil spike","Mar 2011","shock","oil",4],
 [2011.58,"S&amp;P cuts U.S. AAA rating; -17% swoon","Aug 2011","shock","warning",1],
@@ -258,14 +255,18 @@
 [2017.20,"Tax-cut rally; 'Trump bump'","Feb 2017","milestone","rally",5],
 [2021.62,"Delta-variant / peak-growth wobble","Aug 2021","shock","virus",5],
 [2024.30,"Sticky-inflation scare; 'higher for longer'","Apr 2024","shock","tag",5],
-[1959.50,"Post-recession bull; Dow tops 600","1959","milestone","rally",5],
-[1964.50,"Kennedy-Johnson tax cut fuels bull run","1964","milestone","rally",5],
+[1959.12,"Dow Jones first closes above 600","Feb 1959","milestone","rally",5],
+[1964.12,"Revenue Act of 1964: major tax cut fuels the bull","Feb 1964","policy","stamp",4],
 [1965.40,"'The little crash of 1965' (-10%)","May 1965","shock","crash",4],
-[1967.50,"1967 recovery rally (+20%)","1967","milestone","rally",5],
-[1976.50,"1976 election-year peak; Dow near 1,000","1976","milestone","rally",5],
-[1983.40,"1983 recovery: +17% as recession ends","1983","milestone","rally",5],
+[1967.50,"1967 rebound: +20%, recovering the 1966 bear","1967","milestone","rally",5],
+[1976.70,"Dow briefly tops 1,000; 1976 peak","Sep 1976","milestone","rally",5],
+[1983.40,"1983 recovery: +17% as the recession ends","1983","milestone","rally",5],
 [1986.30,"Oil collapses to $10; disinflation bull","1986","milestone","rally",4],
-[1988.40,"1988 post-crash recovery","1988","milestone","rally",5]
+[1988.40,"1988: market recovers most of the 1987 crash","1988","milestone","rally",5],
+[1993.06,"SPY, the first U.S. ETF, begins trading","Jan 1993","milestone","monitor",4],
+[2017.97,"Tax Cuts and Jobs Act signed","Dec 2017","policy","stamp",4],
+[2024.03,"First U.S. spot-Bitcoin ETFs approved","Jan 2024","milestone","monitor",4],
+[2026.20,"2026: markets grind back to record highs","Mar 2026","milestone","rally",5]
 ]
 </script>
 
@@ -385,14 +386,6 @@
   function dispG(v){return state.pct?fmtPct(v/BASE):fmtUSD(v);}
   var MONTHS=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
   function fmtDate(t){var y=Math.floor(t+1e-6);var m=Math.round((t-y)*12);if(m>11){m=0;y++;}return MONTHS[m]+" "+y;}
-
-  /* ============ STAT TILES ==================================== */
-  var eqEnd=EQ[EQ.length-1],boEnd=BO[BO.length-1],caEnd=CA[CA.length-1];
-  document.getElementById("stats").innerHTML=[
-    {c:"eq",k:"U.S. stocks (S&P 500)",v:fmtUSD(eqEnd),n:cagr(BASE,eqEnd,END-START).toFixed(1)+"% annualized &middot; price return"},
-    {c:"bond",k:"U.S. bonds (IG / Agg)",v:fmtUSD(boEnd),n:cagr(BASE,boEnd,END-START).toFixed(1)+"% annualized &middot; total return"},
-    {c:"cash",k:"Cash (T-bills / savings)",v:fmtUSD(caEnd),n:cagr(BASE,caEnd,END-START).toFixed(1)+"% annualized &middot; total return"}
-  ].map(function(s){return '<div class="stat '+s.c+'"><div class="k">'+s.k+'</div><div class="v">'+s.v+'</div><div class="n">'+s.n+'</div></div>';}).join("");
 
   /* ============ CHART ======================================== */
   var svg=document.getElementById("chart");

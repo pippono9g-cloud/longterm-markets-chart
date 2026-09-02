@@ -8,17 +8,17 @@
 2
 ],
 [
-1958.6,
-"Sharp V-shaped recovery",
+1958.55,
+"1958: S&amp;P +43%, one of its best years ever",
 "1958",
 "milestone",
 "rally",
-5
+4
 ],
 [
-1959.5,
-"Post-recession bull; Dow tops 600",
-"1959",
+1959.12,
+"Dow Jones first closes above 600",
+"Feb 1959",
 "milestone",
 "rally",
 5
@@ -32,17 +32,25 @@
 3
 ],
 [
-1961.95,
-"Kennedy elected; 'New Frontier' rally",
-"1961",
+1960.86,
+"Kennedy elected; 'New Frontier' optimism",
+"Nov 1960",
+"milestone",
+"ballot",
+5
+],
+[
+1961.9,
+"1961 bull peak (+23% year) before the Slide",
+"Dec 1961",
 "milestone",
 "rally",
 5
 ],
 [
-1962.4,
-"Kennedy Slide (-27%)",
-"May 1962",
+1962.46,
+"Kennedy Slide / 'Flash Crash of 1962' (-27%)",
+"Jun 1962",
 "shock",
 "crash",
 1
@@ -64,12 +72,12 @@
 4
 ],
 [
-1964.5,
-"Kennedy-Johnson tax cut fuels bull run",
-"1964",
-"milestone",
-"rally",
-5
+1964.12,
+"Revenue Act of 1964: major tax cut fuels the bull",
+"Feb 1964",
+"policy",
+"stamp",
+4
 ],
 [
 1965.4,
@@ -89,7 +97,7 @@
 ],
 [
 1967.5,
-"1967 recovery rally (+20%)",
+"1967 rebound: +20%, recovering the 1966 bear",
 "1967",
 "milestone",
 "rally",
@@ -160,25 +168,41 @@
 4
 ],
 [
-1974.95,
-"Bear-market bottom",
-"Dec 1974",
+1974.68,
+"ERISA signed; the IRA is created",
+"Sep 1974",
+"policy",
+"stamp",
+4
+],
+[
+1974.76,
+"1973-74 bear-market bottom (S&amp;P -48%)",
+"Oct 1974",
 "milestone",
 "rally",
 2
 ],
 [
-1975.4,
+1975.33,
+"'May Day': NYSE ends fixed commissions",
+"May 1975",
+"policy",
+"stamp",
+4
+],
+[
+1975.62,
 "New York City fiscal crisis",
-"1975",
+"Aug 1975",
 "shock",
 "warning",
 5
 ],
 [
-1976.5,
-"1976 election-year peak; Dow near 1,000",
-"1976",
+1976.7,
+"Dow briefly tops 1,000; 1976 peak",
+"Sep 1976",
 "milestone",
 "rally",
 5
@@ -192,7 +216,15 @@
 4
 ],
 [
-1978.85,
+1978.83,
+"Section 401(k) added to the tax code",
+"Nov 1978",
+"policy",
+"stamp",
+4
+],
+[
+1978.9,
 "Dollar crisis; Carter rescue package",
 "Nov 1978",
 "policy",
@@ -257,7 +289,7 @@
 ],
 [
 1983.4,
-"1983 recovery: +17% as recession ends",
+"1983 recovery: +17% as the recession ends",
 "1983",
 "milestone",
 "rally",
@@ -288,9 +320,9 @@
 4
 ],
 [
-1987.2,
-"1987 melt-up",
-"Feb 1987",
+1987.4,
+"1987 melt-up: +39% into the August peak",
+"Spring 1987",
 "milestone",
 "rally",
 4
@@ -305,7 +337,7 @@
 ],
 [
 1988.4,
-"1988 post-crash recovery",
+"1988: market recovers most of the 1987 crash",
 "1988",
 "milestone",
 "rally",
@@ -374,6 +406,14 @@
 "milestone",
 "ballot",
 5
+],
+[
+1993.06,
+"SPY, the first U.S. ETF, begins trading",
+"Jan 1993",
+"milestone",
+"monitor",
+4
 ],
 [
 1993.6,
@@ -470,6 +510,14 @@
 "policy",
 "rateup",
 4
+],
+[
+1999.87,
+"Glass-Steagall repealed (Gramm-Leach-Bliley)",
+"Nov 1999",
+"policy",
+"stamp",
+3
 ],
 [
 1999.95,
@@ -720,6 +768,14 @@
 3
 ],
 [
+2010.55,
+"Dodd-Frank Act signed",
+"Jul 2010",
+"policy",
+"stamp",
+3
+],
+[
 2010.85,
 "Fed announces QE2",
 "Nov 2010",
@@ -885,6 +941,14 @@
 "2017",
 "milestone",
 "rally",
+4
+],
+[
+2017.97,
+"Tax Cuts and Jobs Act signed",
+"Dec 2017",
+"policy",
+"stamp",
 4
 ],
 [
@@ -1104,6 +1168,14 @@
 3
 ],
 [
+2024.03,
+"First U.S. spot-Bitcoin ETFs approved",
+"Jan 2024",
+"milestone",
+"monitor",
+4
+],
+[
 2024.13,
 "AI boom; Nvidia leads megacap surge",
 "Feb 2024",
@@ -1174,5 +1246,13 @@
 "milestone",
 "rally",
 4
+],
+[
+2026.2,
+"2026: markets grind back to record highs",
+"Mar 2026",
+"milestone",
+"rally",
+5
 ]
 ]
