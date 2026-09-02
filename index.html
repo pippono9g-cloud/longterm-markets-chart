@@ -57,7 +57,7 @@
   svg{display:block;width:100%;height:auto;overflow:visible;touch-action:none;cursor:crosshair;
     -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
   svg.dragging{cursor:grabbing}
-  .chart-scroll{overflow-x:hidden;touch-action:none}
+  .chart-scroll{overflow:hidden;touch-action:none}
   .foot{margin:14px 0 0;font-size:11.5px;line-height:1.55;color:var(--ink-mute);border-top:1px solid var(--hair);padding-top:11px}
   .foot strong{color:var(--ink-soft);font-weight:700}
   text{font-family:Arial,Helvetica,"Noto Sans Thai",sans-serif}
@@ -409,6 +409,7 @@
   /* ============ CHART ======================================== */
   var svg=document.getElementById("chart");
   var hit=svg.parentNode;          // .chart-scroll - full-area touch/pointer surface
+  var scene=null;                  // <g> holding everything drawn; transformed live during a pinch
   var W=1760,H=780, mL=82,mR=196,mT=44,mB=48;
   var pL=mL,pR=W-mR,pT=mT,pB=H-mB;
   var toneCol={shock:"var(--shock)",policy:"var(--policy)",milestone:"var(--milestone)"};
@@ -673,10 +674,8 @@
     });
     S.push(layer.join(""));
     }  // end if(!fast)
-    S.push('<g id="hover"></g>');
-    S.push('<rect id="hitbox" x="'+pL+'" y="'+pT+'" width="'+(pR-pL)+'" height="'+(pB-pT)+'" fill="transparent"/>');
-
-    svg.innerHTML=S.join("");
+    svg.innerHTML='<g id="scene">'+S.join("")+'</g><g id="hover"></g>';
+    scene=svg.firstElementChild;
 
     syncYearInputs();
     if(fast) return;
@@ -759,14 +758,44 @@
     hit.addEventListener(ev,function(e){e.preventDefault();},{passive:false});
   });
 
+  // Photos-style pinch: during the gesture we just apply a GPU transform to <g id="scene">
+  // (no re-draw at all), then re-render once, crisp, when the fingers lift.
+  var gest=null;
   function pinchInit(e){
     tch.mode=3;
-    tch.dom0=state.dom.slice();
-    tch.pd0=tdist(e)||1;
-    tch.pmx0=(e.touches[0].clientX+e.touches[1].clientX)/2;
-    tch.pfrac=clientToFrac(tch.pmx0);        // where the fingers sit across the plot, 0..1
-    tch.pcy=clientToYear(tch.pmx0);          // the year currently under that point
+    var mx=(e.touches[0].clientX+e.touches[1].clientX)/2,
+        my=(e.touches[0].clientY+e.touches[1].clientY)/2;
+    var m=svg.getScreenCTM(), vb;
+    if(m){ pt.x=mx; pt.y=my; vb=pt.matrixTransform(m.inverse()); } else { vb={x:W/2,y:H/2}; }
+    gest={ d0:tdist(e)||1, mx0:mx, my0:my, ox:vb.x, oy:vb.y,
+           dom0:state.dom.slice(), rw:(svg.getBoundingClientRect().width||1),
+           s:1, tx:0, ty:0 };
     endHover();
+  }
+  function applyGest(e){
+    var d=tdist(e)||1, s=d/gest.d0;
+    var mx=(e.touches[0].clientX+e.touches[1].clientX)/2,
+        my=(e.touches[0].clientY+e.touches[1].clientY)/2;
+    var k=W/gest.rw;
+    gest.s=s; gest.tx=(mx-gest.mx0)*k; gest.ty=(my-gest.my0)*k;
+    scene.setAttribute("transform",
+      "translate("+gest.tx.toFixed(2)+" "+gest.ty.toFixed(2)+") "+
+      "translate("+gest.ox.toFixed(2)+" "+gest.oy.toFixed(2)+") "+
+      "scale("+s.toFixed(4)+") "+
+      "translate("+(-gest.ox).toFixed(2)+" "+(-gest.oy).toFixed(2)+")");
+  }
+  function commitGest(){
+    if(!gest) return;
+    var oldSpan=gest.dom0[1]-gest.dom0[0];
+    var sp=Math.max(MINSPAN, Math.min(END-START, oldSpan/gest.s));
+    // pre-transform viewBox-x that now sits at the plot's left edge:
+    var xAtPL=(pL - gest.tx - gest.ox)/gest.s + gest.ox;
+    var n0=gest.dom0[0] + (xAtPL - pL)/(pR-pL)*oldSpan;
+    n0=Math.max(START, Math.min(END-sp, n0));
+    state.dom=[n0, n0+sp];
+    scene.removeAttribute("transform");
+    gest=null; tch.mode=0;
+    syncFrButtons(); render(false);
   }
   hit.addEventListener("touchstart",function(e){
     if(e.touches.length>=2){
@@ -790,34 +819,20 @@
     if(tch.mode===9) return;
     if(e.touches.length>=2){
       e.preventDefault();
-      if(tch.mode!==3) pinchInit(e);                          // works even if 1 finger was already resting
-      var d=tdist(e); if(d<1) return;
-      var oldSpan=tch.dom0[1]-tch.dom0[0];
-      var mxNow=(e.touches[0].clientX+e.touches[1].clientX)/2;
-      // Zoom OR pan - never both. Decided fresh every move (no sticky lock), so
-      // spreading then pinching back in the same gesture keeps zooming, both ways.
-      var rel=d/tch.pd0;                                      // >1 spread apart, <1 pinched together
-      var nsp, n0, rw=svg.getBoundingClientRect().width||W;
-      if(Math.abs(rel-1) > 0.08){                             // the spread changed -> ZOOM
-        nsp=Math.max(MINSPAN, Math.min(END-START, oldSpan/rel));
-        n0=tch.pcy - tch.pfrac*nsp;
-      }else{                                                  // spread held steady -> PAN
-        nsp=oldSpan;
-        n0=tch.dom0[0] - ((mxNow-tch.pmx0)/rw)*(W/(pR-pL))*nsp;
-      }
-      n0=Math.max(START, Math.min(END-nsp, n0));
-      state.dom=[n0, n0+nsp]; scheduleRender(true); return;
+      if(tch.mode!==3 || !gest) pinchInit(e);   // works even if 1 finger was already resting
+      applyGest(e);                             // pure GPU transform - no re-draw
+      return;
     }
-    if(e.touches.length!==1) return;
+    if(e.touches.length!==1 || gest) return;
     e.preventDefault();
-    moveHover(e);                                             // one finger = scrub the readout
+    moveHover(e);                               // one finger = scrub the readout
   },{passive:false});
   hit.addEventListener("touchend",function(e){
-    // lifting a one-finger scrub leaves the readout frozen in place (it clears on the
-    // next tap, on any pan/zoom re-render, or when a two-finger gesture starts).
-    if(e.touches.length===0){ tch.mode=0; }
-    else if(e.touches.length===1){   // lifted one finger of a pinch -> re-anchor the remaining one
-      tch.mode=0; tch.x=e.touches[0].clientX; tch.y=e.touches[0].clientY; tch.dom0=state.dom.slice();
+    if(e.touches.length===0){
+      if(gest) commitGest();                    // fingers up after a pinch -> bake it in, redraw crisp
+      tch.mode=0;
+    } else if(e.touches.length===1 && gest){
+      commitGest();                             // dropped to one finger -> finish the pinch now
     }
   },{passive:true});
 
