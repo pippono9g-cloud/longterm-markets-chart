@@ -417,7 +417,7 @@
     {k:"15Y",yrs:15},{k:"10Y",yrs:10},{k:"5Y",yrs:5}
   ];
   var state={fi:0,rebase:true,pct:true,dom:[START,END]};   // default: % return, rebased to window
-  var MINSPAN=0.5;
+  var MINSPAN=1.0;   // tightest zoom = a single year
 
   var cbox=document.getElementById("controls");
   function mkBtn(txt,title){var b=document.createElement("button");b.className="tf-btn";b.type="button";
@@ -447,8 +447,8 @@
     var t=parseInt((yrTo.value||"").replace(/\D/g,""),10);
     if(isNaN(f)) f=Math.round(state.dom[0]);
     if(isNaN(t)) t=Math.round(state.dom[1]);
-    f=Math.min(Math.max(f,YMIN),YMAX-1);
-    t=Math.min(Math.max(t,f+1),YMAX);
+    f=Math.min(Math.max(f,YMIN),YMAX);
+    t=Math.min(Math.max(t,f),YMAX);          // same year in both = that single year
     state.dom=[Math.max(START, f), (t>=YMAX ? END : Math.min(END, t+0.999))];
     syncFrButtons(); syncYearInputs(); render();
   }
@@ -596,12 +596,11 @@
       lx+=30+it[0].replace(/&[a-z]+;/g,'x').length*6.7+30;
     });
 
-    // ---- events: keep a roughly CONSTANT count on screen at every zoom level ----
-    // Show the ~TARGET most important events inside the window; a short window then
-    // surfaces smaller events to fill the same quota (zoom in -> more detail).
+    // ---- events: ~constant count for wide windows; ~1 per year once zoomed right in ----
     var TARGET = Math.min(
       (span > 55 ? DEFAULT_EVENT_COUNT - 2 : DEFAULT_EVENT_COUNT),
-      Math.max(6, Math.floor((pR - pL) / 118))
+      Math.max(6, Math.floor((pR - pL) / 118)),
+      Math.max(1, Math.round(span * 1.4))          // 1yr window -> 1 event, 3yr -> ~4, 10yr+ -> full
     );
     var inWin = events.filter(function(e){return e[0]>=curDomain[0]-0.02 && e[0]<=curDomain[1]+0.02;})
                       .sort(function(a,b){return a[0]-b[0];});
@@ -632,7 +631,7 @@
         edges.push(curDomain[1]);
         var gi=-1,gmax=0;
         for(g=0;g<edges.length-1;g++){var w=edges[g+1]-edges[g]; if(w>gmax){gmax=w;gi=g;}}
-        if(gmax < span/5.5) break;
+        if(span < 4 || gmax < span/5.5) break;   // don't back-fill tight zooms
         var lo=edges[gi],hi=edges[gi+1],mid=(lo+hi)/2,pick=null,pri=1e9;
         rest.forEach(function(e){
           if(e[0]<=lo||e[0]>=hi)return;
