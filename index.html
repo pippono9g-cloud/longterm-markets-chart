@@ -450,23 +450,30 @@
       lx+=30+it[0].replace(/&[a-z]+;/g,'x').length*6.7+30;
     });
 
-    // ---- events: level-of-detail by window size ----
-    var maxTier = span>48?1 : span>22?2 : span>10?3 : 4;
-    var vis=events.filter(function(e){return e[5]<=maxTier && e[0]>=curDomain[0]-0.02 && e[0]<=END+0.02;});
-    // keep it legible: if still crowded, thin out the lowest-priority, most-clustered ones
-    var CAP=26;
-    vis.sort(function(a,b){return a[0]-b[0];});
-    while(vis.length>CAP){
-      var mx=Math.max.apply(null,vis.map(function(e){return e[5];}));
-      if(mx<=1)break;
-      var ri=-1,best=1e9;
-      for(var vi=0;vi<vis.length;vi++){
-        if(vis[vi][5]!==mx)continue;
-        var gap=Math.min(vi>0?vis[vi][0]-vis[vi-1][0]:9,vi<vis.length-1?vis[vi+1][0]-vis[vi][0]:9);
-        if(gap<best){best=gap;ri=vi;}
+    // ---- events: keep a roughly CONSTANT count on screen at every zoom level ----
+    // Show the ~TARGET most important events inside the window; a short window then
+    // surfaces smaller events to fill the same quota (zoom in -> more detail).
+    var TARGET = span>55 ? 15 : 17;
+    var inWin = events.filter(function(e){return e[0]>=curDomain[0]-0.02 && e[0]<=END+0.02;})
+                      .sort(function(a,b){return a[0]-b[0];});
+    var vis;
+    if(inWin.length<=TARGET){ vis=inWin.slice(); }
+    else {
+      var byTier={}; inWin.forEach(function(e){(byTier[e[5]]=byTier[e[5]]||[]).push(e);});
+      vis=[];
+      for(var tr=1;tr<=4 && vis.length<TARGET;tr++){
+        var grp=byTier[tr]||[];
+        if(vis.length+grp.length<=TARGET){ vis=vis.concat(grp); }
+        else{
+          var need=TARGET-vis.length, seen={};
+          for(var j=0;j<need;j++){
+            var ix=need>1?Math.round(j*(grp.length-1)/(need-1)):Math.floor(grp.length/2);
+            while(seen[ix])ix=(ix+1)%grp.length;
+            seen[ix]=1; vis.push(grp[ix]);
+          }
+        }
       }
-      if(ri<0)break;
-      vis.splice(ri,1);
+      vis.sort(function(a,b){return a[0]-b[0];});
     }
     var placed=[], layer=[];
     function ov(a,b){return !(a.x1<b.x0||a.x0>b.x1||a.y1<b.y0||a.y0>b.y1);}
@@ -500,8 +507,8 @@
     // sub line + event count note
     var cnt=vis.length;
     document.getElementById("sub").innerHTML = f.k==="Max"
-      ? "$10,000 invested when the S&amp;P 500 began in 1957, held through every crisis since"
-      : "Zoomed to the last "+f.k+" &mdash; "+cnt+" market events shown (more detail appears as you zoom in)";
+      ? "$10,000 invested when the S&amp;P 500 began in 1957 &mdash; "+cnt+" defining events marked"
+      : "Zoomed to the last "+f.k+" &mdash; "+cnt+" events (about the same count at every zoom; smaller events appear as you look closer)";
   }
 
   /* ============ HOVER / CROSSHAIR ============================ */
