@@ -4,84 +4,85 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Stocks, Bonds &amp; Cash Since 1957</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@500;600&display=swap">
 <style>
+  /* House theme — matches the Thailand Fund Risk-Return / Fund-flow / Performance dashboards */
   :root{
-    --ground:#FBFAF6; --panel:#FFFFFF; --ink:#0B1C2E; --ink-soft:#4A5A6A; --ink-mute:#8A97A3;
-    --grid:#E6E1D4; --hair:#D8D2C2; --eq:#1F4E8C; --eq-fill:#1F4E8C; --bond:#C07C1E; --cash:#6B7A88;
-    --shock:#B23B2E; --policy:#1F4E8C; --milestone:#2E7D6B; --halo:#FFFFFF; --btn:#F2EFE6;
-  }
-  @media (prefers-color-scheme:dark){
-    :root:not([data-theme="light"]){
-      --ground:#0C1420; --panel:#111C2A; --ink:#EEF2F6; --ink-soft:#A9B6C2; --ink-mute:#6E7C89;
-      --grid:#1E2C3B; --hair:#263547; --eq:#5FA0DC; --eq-fill:#5FA0DC; --bond:#E0A44C; --cash:#9AAAB8;
-      --shock:#E1685A; --policy:#5FA0DC; --milestone:#54B79F; --halo:#111C2A; --btn:#1A2836;
-    }
-  }
-  :root[data-theme="dark"]{
-    --ground:#0C1420; --panel:#111C2A; --ink:#EEF2F6; --ink-soft:#A9B6C2; --ink-mute:#6E7C89;
-    --grid:#1E2C3B; --hair:#263547; --eq:#5FA0DC; --eq-fill:#5FA0DC; --bond:#E0A44C; --cash:#9AAAB8;
-    --shock:#E1685A; --policy:#5FA0DC; --milestone:#54B79F; --halo:#111C2A; --btn:#1A2836;
+    --scb:#4F2D7F; --scb-l:#EFE9F7; --scb-d:#3a2160;
+    --ground:#ffffff; --panel:#ffffff;
+    --ink:#1a1a1a; --ink-soft:#4d4d4d; --ink-mute:#666666;
+    --grid:#e5e5e5; --hair:#cccccc; --soft:#f2f2f2;
+    --eq:#4F2D7F; --eq-fill:#4F2D7F; --bond:#B45309; --cash:#007BB0;
+    --shock:#b91c1c; --policy:#475569; --milestone:#047857;
+    --halo:#ffffff;
   }
   *{box-sizing:border-box}
   body{background:var(--ground);color:var(--ink);margin:0;
-    font-family:"Libre Franklin",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-    -webkit-font-smoothing:antialiased;line-height:1.45}
-  .wrap{max-width:1820px;margin:0 auto;padding:26px 22px 40px}
-  .card{background:var(--panel);border:1px solid var(--hair);border-radius:6px;padding:30px 34px 26px;
-    box-shadow:0 1px 0 rgba(11,28,46,.04),0 14px 40px -22px rgba(11,28,46,.28)}
-  .eyebrow{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 9px}
-  h1{font-size:clamp(28px,3.6vw,44px);font-weight:900;letter-spacing:-.02em;margin:0 0 6px;text-wrap:balance}
-  .sub{font-size:clamp(14px,1.5vw,18px);font-weight:600;color:var(--eq);margin:0 0 20px}
-  .stats{display:flex;flex-wrap:wrap;gap:12px;margin:0 0 18px}
-  .stat{border:1px solid var(--hair);border-radius:5px;padding:11px 15px 10px;min-width:184px;background:var(--ground)}
-  .stat .k{font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-mute);display:flex;align-items:center;gap:7px}
-  .stat .k::before{content:"";width:12px;height:3px;border-radius:2px;background:var(--c,var(--ink))}
+    font-family:Arial,Helvetica,"Segoe UI","Noto Sans Thai",sans-serif;
+    font-size:13.5px;line-height:1.45;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1500px;margin:0 auto;padding:24px 24px 52px}
+  .title-bar{display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap;
+    padding:14px 16px 12px;border-radius:12px;margin-bottom:16px;
+    background:linear-gradient(135deg,var(--scb-l) 0%,#fff 55%);
+    border:1px solid #e8dff5;border-bottom:2px solid var(--scb)}
+  .arrow{flex:none;margin-top:6px;width:0;height:0;
+    border-top:9px solid transparent;border-bottom:9px solid transparent;border-left:13px solid var(--scb)}
+  .tt{flex:1;min-width:260px}
+  .eyebrow{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 4px}
+  h1{font-size:24px;font-weight:700;letter-spacing:-.005em;margin:0}
+  .sub{font-size:13px;font-weight:700;color:var(--scb);margin:4px 0 0}
+  .tag{display:inline-flex;border:1px solid var(--ink);border-radius:999px;overflow:hidden;
+    font-size:11px;font-weight:700;letter-spacing:.04em;flex:none;margin-top:3px}
+  .tag span{padding:4px 12px;border-right:1px solid var(--ink);background:#fff;white-space:nowrap}
+  .tag span:last-child{border-right:none}
+  .card{border:1px solid var(--hair);border-radius:12px;padding:16px 18px 18px;
+    box-shadow:0 1px 3px rgba(79,45,127,.06)}
+  .stats{display:flex;flex-wrap:wrap;gap:12px;margin:0 0 16px}
+  .stat{border:1px solid var(--hair);border-radius:10px;padding:11px 15px 10px;min-width:190px;background:#fff}
+  .stat .k{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-mute);display:flex;align-items:center;gap:7px}
+  .stat .k::before{content:"";width:14px;height:3px;border-radius:2px;background:var(--c,var(--ink))}
   .stat.eq{--c:var(--eq)} .stat.bond{--c:var(--bond)} .stat.cash{--c:var(--cash)}
-  .stat .v{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:22px;font-weight:600;margin-top:2px;font-variant-numeric:tabular-nums}
-  .stat .n{font-size:12px;color:var(--ink-soft);font-weight:500}
-  .controls{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 6px}
-  .controls .lbl{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-mute);margin-right:4px}
-  .tf-btn{font:inherit;font-size:13px;font-weight:600;color:var(--ink-soft);background:var(--btn);
-    border:1px solid var(--hair);border-radius:999px;padding:5px 13px;cursor:pointer;transition:.12s}
-  .tf-btn:hover{border-color:var(--ink-mute)}
-  .tf-btn[aria-pressed="true"]{background:var(--eq);border-color:var(--eq);color:#fff}
-  .tf-btn:focus-visible{outline:2px solid var(--eq);outline-offset:2px}
-  .tf-btn:disabled{opacity:.4;cursor:not-allowed}
+  .stat .v{font-size:21px;font-weight:700;margin-top:2px;font-variant-numeric:tabular-nums}
+  .stat .n{font-size:12px;color:var(--ink-soft);font-weight:400}
+  .controls{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 4px}
+  .controls .lbl{font-size:11.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-mute);margin-right:2px}
+  .tf-btn{font:inherit;font-size:12.5px;font-weight:700;color:var(--ink-soft);background:#fff;
+    border:1.5px solid var(--ink);border-radius:999px;padding:5px 14px;cursor:pointer;transition:.12s}
+  .tf-btn:hover{background:var(--soft);color:var(--ink)}
+  .tf-btn[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+  .tf-btn:focus-visible{outline:2px solid var(--scb);outline-offset:2px}
+  .tf-btn:disabled{opacity:.38;cursor:not-allowed}
   figure{margin:12px 0 0;position:relative}
-  svg{display:block;width:100%;height:auto;overflow:visible;touch-action:pan-y;cursor:crosshair}
+  svg{display:block;width:100%;height:auto;overflow:visible;touch-action:pan-y;cursor:crosshair;
+    -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
   svg.dragging{cursor:grabbing}
   .chart-scroll{overflow-x:hidden}
-  .tip{position:absolute;pointer-events:none;z-index:5;background:var(--panel);border:1px solid var(--hair);
-    border-radius:6px;padding:9px 11px;font-size:12.5px;box-shadow:0 8px 26px -10px rgba(11,28,46,.4);
-    min-width:172px;opacity:0;transition:opacity .1s}
-  .tip.on{opacity:1}
-  .tip .td{font-weight:700;font-size:12px;letter-spacing:.02em;margin-bottom:5px;color:var(--ink)}
-  .tip .tr{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:2px 0}
-  .tip .tr span{display:flex;align-items:center;gap:6px;color:var(--ink-soft);font-weight:500}
-  .tip .tr b{font-family:"IBM Plex Mono",monospace;font-weight:600;font-variant-numeric:tabular-nums;color:var(--ink)}
-  .tip .dot{width:9px;height:9px;border-radius:2px;flex:none}
-  .foot{margin:16px 0 0;font-size:11.5px;line-height:1.6;color:var(--ink-mute);border-top:1px solid var(--hair);padding-top:11px}
-  .foot strong{color:var(--ink-soft);font-weight:600}
-  text{font-family:"Libre Franklin",sans-serif}
-  .ax{fill:var(--ink-mute);font-size:13px;font-weight:500}
-  .ax-strong{fill:var(--ink-soft);font-size:13px;font-weight:600}
+  .foot{margin:14px 0 0;font-size:11.5px;line-height:1.55;color:var(--ink-mute);border-top:1px solid var(--hair);padding-top:11px}
+  .foot strong{color:var(--ink-soft);font-weight:700}
+  text{font-family:Arial,Helvetica,"Noto Sans Thai",sans-serif}
+  .ax{fill:var(--ink-mute);font-size:12px;font-weight:400}
+  .ax-strong{fill:var(--ink-soft);font-size:12px;font-weight:700}
   .gridline{stroke:var(--grid);stroke-width:1}
   .gridline.minor{stroke-dasharray:2 3;opacity:.6}
-  .baseline{stroke:var(--ink-soft);stroke-width:1.5}
-  .evt-label{fill:var(--ink);font-size:12px;font-weight:600}
-  .evt-date{fill:var(--ink-mute);font-size:11px;font-weight:500}
-  .series-end{font-family:"IBM Plex Mono",monospace;font-size:13px;font-weight:600;font-variant-numeric:tabular-nums}
-  .cross{stroke:var(--ink-soft);stroke-width:1;stroke-dasharray:3 3;opacity:.7}
+  .baseline{stroke:var(--ink-soft);stroke-width:1.4}
+  .evt-label{fill:var(--ink);font-size:12px;font-weight:700}
+  .evt-date{fill:var(--ink-mute);font-size:11px;font-weight:400}
+  .series-end{font-size:12.5px;font-weight:700;font-variant-numeric:tabular-nums}
+  .cross{stroke:var(--ink-soft);stroke-width:1;stroke-dasharray:3 3;opacity:.75}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <div class="card">
-    <p class="eyebrow">1957 &ndash; 2026 &nbsp;&bull;&nbsp; U.S. dollars &nbsp;&bull;&nbsp; growth of a single $10,000 investment &nbsp;&bull;&nbsp; ratio scale</p>
-    <h1>Stocks, bonds &amp; cash over the long run</h1>
-    <p class="sub" id="sub">$10,000 invested when the S&amp;P 500 began in 1957, held through every crisis since</p>
+  <div class="title-bar">
+    <span class="arrow"></span>
+    <div class="tt">
+      <p class="eyebrow">1957 &ndash; 2026 &nbsp;&bull;&nbsp; U.S. dollars &nbsp;&bull;&nbsp; growth of a single $10,000 investment</p>
+      <h1>Stocks, bonds &amp; cash over the long run</h1>
+      <p class="sub" id="sub">$10,000 invested when the S&amp;P 500 began in 1957, held through every crisis since</p>
+    </div>
+    <span class="tag"><span>Ratio scale</span><span>Illustrative</span></span>
+  </div>
 
+  <div class="card">
     <div class="stats" id="stats"></div>
 
     <div class="controls" id="controls">
@@ -93,12 +94,176 @@
         <svg id="chart" viewBox="0 0 1760 780" role="img"
              aria-label="Interactive logarithmic chart of $10,000 invested in U.S. stocks, bonds and cash since 1957, with adjustable time frame and event annotations that reveal more detail when zoomed in."></svg>
       </div>
-      <div class="tip" id="tip"></div>
     </figure>
 
     <p class="foot" id="foot"></p>
   </div>
 </div>
+
+<!-- ================= EVENT DATA =================================================
+  One curated market-event index. Each row: [decimalYear, label, date, tone, icon, tier]
+    tone : "shock" | "policy" | "milestone"   (marker colour)
+    icon : key into the ICONS map in the script below
+    tier : 1 = era-defining .. 5 = minor/colour  (importance index used by the
+           level-of-detail selector, which keeps a roughly constant number of the
+           most important events on screen at every zoom level)
+  Mirror of events.json in the repo. Dates are approximate; sources: Wikipedia
+  "List of stock market crashes and bear markets" / "List of recessions in the
+  United States", NBER business-cycle dates, Federal Reserve policy timelines,
+  Laeven & Valencia (IMF) Systemic Banking Crises Database, JPMorgan Guide to the
+  Markets. Importance tiering is hand-curated (no public ranked dataset exists).
+============================================================================== -->
+<script type="application/json" id="event-data">
+[
+[1957.80,"1957-58 recession &amp; sell-off","Oct 1957","shock","crash",2],
+[1958.60,"Sharp V-shaped recovery","1958","milestone","rally",5],
+[1960.30,"1960-61 recession","Apr 1960","shock","crash",3],
+[1961.95,"Kennedy elected; 'New Frontier' rally","1961","milestone","rally",5],
+[1962.40,"Kennedy Slide (-27%)","May 1962","shock","crash",1],
+[1962.80,"Cuban Missile Crisis","Oct 1962","shock","warning",3],
+[1963.90,"JFK assassination","Nov 1963","shock","warning",4],
+[1966.30,"1966 credit-crunch bear (-22%)","Aug 1966","shock","percent",2],
+[1968.40,"'Go-go' market peak","Nov 1968","milestone","rally",3],
+[1969.50,"1969-70 recession begins","Jul 1969","shock","crash",2],
+[1970.40,"1969-70 bear-market low (-36%)","May 1970","shock","crash",1],
+[1970.48,"Penn Central bankruptcy","Jun 1970","shock","bank",4],
+[1971.63,"Nixon Shock: gold window closed","Aug 1971","policy","star",2],
+[1972.95,"Nifty Fifty peak","Jan 1973","milestone","rally",3],
+[1973.80,"OPEC oil embargo; 1973-74 bear (-48%)","Oct 1973","shock","oil",1],
+[1974.60,"Nixon resigns","Aug 1974","shock","warning",4],
+[1974.95,"Bear-market bottom","Dec 1974","milestone","rally",2],
+[1975.40,"New York City fiscal crisis","1975","shock","warning",5],
+[1977.20,"1977-78 'stealth' bear (-19%)","Feb 1977","shock","crash",4],
+[1978.85,"Dollar crisis; Carter rescue package","Nov 1978","policy","percent",4],
+[1979.63,"Volcker named Fed chair","Aug 1979","policy","percent",1],
+[1979.90,"Second oil shock (Iran)","Nov 1979","shock","oil",2],
+[1980.20,"Inflation peaks at 14.8%; brief recession","Mar 1980","shock","tag",1],
+[1980.25,"Hunt brothers silver crash","Mar 1980","shock","crash",4],
+[1981.55,"1981-82 recession; Volcker holds","Jul 1981","shock","crash",2],
+[1982.60,"Secular bull market begins","Aug 1982","milestone","rally",1],
+[1982.65,"Mexico default; LatAm debt crisis","Aug 1982","shock","globe",3],
+[1984.35,"Continental Illinois; 'too big to fail'","May 1984","shock","bank",3],
+[1985.70,"Plaza Accord (dollar devaluation)","Sep 1985","policy","stamp",3],
+[1987.20,"1987 melt-up","Feb 1987","milestone","rally",4],
+[1987.80,"Black Monday (-22.6% in a day)","Oct 19, 1987","shock","crash",1],
+[1989.80,"Oct 1989 mini-crash (UAL deal fails)","Oct 1989","shock","crash",3],
+[1989.95,"S&amp;L crisis peak; RTC created","1989","shock","bank",3],
+[1990.05,"Japan asset bubble bursts","Jan 1990","shock","globe",2],
+[1990.58,"Iraq invades Kuwait; oil spike","Aug 1990","shock","oil",1],
+[1990.75,"1990-91 recession; bear low (-20%)","Oct 1990","shock","crash",2],
+[1991.10,"Gulf War; relief rally","Jan 1991","milestone","rally",3],
+[1994.13,"Fed surprise hike; global bond rout","Feb 1994","shock","percent",1],
+[1994.95,"Mexican 'Tequila' crisis / peso","Dec 1994","shock","globe",3],
+[1995.13,"Barings Bank collapse","Feb 1995","shock","warning",4],
+[1995.60,"Netscape IPO; dot-com bull accelerates","Aug 1995","milestone","monitor",3],
+[1996.95,"'Irrational exuberance' speech","Dec 1996","policy","percent",3],
+[1997.55,"Asian financial crisis begins","Jul 1997","shock","globe",2],
+[1997.82,"Oct 27, 1997 mini-crash (-7%)","Oct 1997","shock","crash",4],
+[1998.55,"Russia default","Aug 1998","shock","warning",2],
+[1998.71,"LTCM near-collapse; Fed-brokered rescue","Sep 1998","shock","warning",2],
+[1998.80,"Fed emergency cuts; V-shaped rebound","Oct 1998","policy","percent",3],
+[1999.45,"Fed starts hiking; Y2K liquidity","Jun 1999","policy","rateup",4],
+[1999.95,"Dot-com blow-off top","Dec 1999","milestone","monitor",3],
+[2000.23,"Dot-com peak (Mar 24, 2000)","Mar 2000","milestone","monitor",1],
+[2000.85,"Nasdaq -40%; 'tech wreck'","Nov 2000","shock","crash",3],
+[2001.20,"2001 recession begins","Mar 2001","shock","crash",2],
+[2001.70,"9/11 attacks; NYSE closed 4 days","Sep 2001","shock","tower",1],
+[2001.83,"Enron collapse","Nov 2001","shock","doc",3],
+[2002.53,"WorldCom bankruptcy; accounting scandals","Jul 2002","shock","doc",3],
+[2002.77,"Bear-market bottom (-49%, Oct 2002)","Oct 2002","milestone","rally",2],
+[2003.22,"Iraq war begins; new bull market","Mar 2003","milestone","flag",2],
+[2004.48,"Fed begins 'measured' rate hikes","Jun 2004","policy","rateup",4],
+[2006.50,"U.S. housing prices peak","Jul 2006","milestone","house",3],
+[2007.20,"Subprime lenders fail (New Century)","Mar 2007","shock","house",3],
+[2007.45,"Bear Stearns hedge funds implode","Jun 2007","shock","warning",4],
+[2007.62,"Quant quake; BNP freezes funds","Aug 2007","shock","warning",3],
+[2007.77,"Market peak; GFC begins (Oct 9, 2007)","Oct 2007","shock","crash",2],
+[2008.16,"Bear Stearns rescued by JPMorgan","Mar 2008","shock","bank",3],
+[2008.53,"Fannie Mae &amp; Freddie Mac seized","Jul 2008","policy","stamp",3],
+[2008.71,"Lehman Brothers bankruptcy (Sep 15)","Sep 2008","shock","bank",1],
+[2008.73,"AIG bailout; money funds 'break the buck'","Sep 2008","policy","stamp",3],
+[2008.79,"TARP passed; worst week since 1933","Oct 2008","policy","stamp",3],
+[2008.93,"Fed launches QE1; rates to zero","Dec 2008","policy","percent",2],
+[2009.19,"Market bottom (Mar 9, 2009)","Mar 2009","milestone","rally",1],
+[2010.35,"Flash Crash (-9% intraday)","May 2010","shock","bolt",3],
+[2010.42,"Greece bailout #1; euro crisis","May 2010","shock","globe",3],
+[2010.85,"Fed announces QE2","Nov 2010","policy","percent",3],
+[2011.18,"Arab Spring; Japan quake; oil spike","Mar 2011","shock","oil",4],
+[2011.58,"S&amp;P cuts U.S. AAA rating; -17% swoon","Aug 2011","shock","warning",1],
+[2011.90,"Euro crisis 2nd wave; ECB LTRO","Nov 2011","policy","percent",4],
+[2012.55,"Draghi: 'whatever it takes'","Jul 2012","policy","percent",3],
+[2013.38,"Taper tantrum (yields spike)","May 2013","shock","percent",2],
+[2014.55,"Oil crash begins ($107 to $27)","Jun 2014","shock","oil",3],
+[2014.78,"Oct 2014 'Bullard bounce' / Ebola dip","Oct 2014","shock","crash",5],
+[2015.04,"SNB scraps the franc peg","Jan 2015","shock","warning",4],
+[2015.66,"China devaluation; Aug 2015 selloff (-12%)","Aug 2015","shock","globe",2],
+[2015.96,"Fed's first hike since 2006","Dec 2015","policy","rateup",3],
+[2016.10,"Jan-Feb 2016 growth scare; oil to $26","Feb 2016","shock","crash",3],
+[2016.48,"Brexit referendum","Jun 2016","shock","ballot",2],
+[2016.86,"Trump elected; 'reflation trade'","Nov 2016","milestone","ballot",3],
+[2018.10,"Volmageddon; XIV ETN collapses","Feb 2018","shock","bolt",3],
+[2018.70,"Trade war: tariffs on $250bn of goods","Sep 2018","policy","ship",3],
+[2018.96,"Q4 2018 sell-off (-19.8%)","Dec 2018","shock","crash",1],
+[2019.55,"Fed 'insurance' rate cuts begin","Jul 2019","policy","percent",3],
+[2019.73,"Repo-market blowup; Fed intervenes","Sep 2019","shock","percent",4],
+[2020.19,"COVID-19 crash (-34% in 33 days)","Mar 2020","shock","virus",1],
+[2020.24,"Fed unlimited QE; $2tn CARES Act","Mar 2020","policy","stamp",2],
+[2020.30,"WTI oil futures go negative","Apr 2020","shock","oil",3],
+[2020.63,"Big-tech melt-up; new highs","Aug 2020","milestone","rally",4],
+[2020.85,"Vaccine news; value rotation","Nov 2020","milestone","rally",4],
+[2021.05,"GameStop / meme-stock squeeze","Jan 2021","milestone","rally",3],
+[2021.22,"Archegos family office blows up","Mar 2021","shock","warning",4],
+[2021.87,"Fed retires 'transitory'; hawkish turn","Nov 2021","policy","tag",3],
+[2022.02,"Growth / tech bear begins; ARKK -60%","Jan 2022","shock","crash",3],
+[2022.15,"Russia invades Ukraine; commodity spike","Feb 2022","shock","warning",2],
+[2022.21,"Fed lift-off: first hike of the cycle","Mar 2022","policy","rateup",2],
+[2022.46,"U.S. inflation peaks at 9.1%","Jun 2022","shock","tag",1],
+[2022.75,"UK gilt / LDI pension crisis","Sep 2022","shock","warning",3],
+[2022.79,"Bear-market bottom (Oct 12, -25%)","Oct 2022","milestone","rally",2],
+[2023.19,"SVB &amp; Signature fail; Credit Suisse rescued","Mar 2023","shock","bank",1],
+[2023.42,"Debt-ceiling standoff resolved","Jun 2023","policy","doc",4],
+[2023.58,"Fitch cuts U.S. rating to AA+","Aug 2023","shock","star",3],
+[2023.80,"10-year Treasury yield tops 5%","Oct 2023","shock","percent",3],
+[2023.92,"Fed 'pivot'; everything rally","Dec 2023","policy","percent",3],
+[2024.13,"AI boom; Nvidia leads megacap surge","Feb 2024","milestone","monitor",3],
+[2024.60,"Yen carry-trade unwind; Aug 5 VIX spike","Aug 2024","shock","yen",2],
+[2024.72,"Fed cuts 50bp; easing cycle begins","Sep 2024","policy","percent",3],
+[2024.87,"Trump re-elected; post-election rally","Nov 2024","milestone","ballot",3],
+[2025.08,"DeepSeek AI shock; megacap selloff","Jan 2025","shock","monitor",3],
+[2025.25,"'Liberation Day' tariffs; -12% in a week","Apr 2025","shock","stamp",1],
+[2025.35,"90-day tariff pause; sharp rebound","May 2025","milestone","rally",3],
+[2025.62,"AI-capex boom; fresh record highs","Aug 2025","milestone","rally",4],
+[2001.02,"Fed surprise inter-meeting rate cut","Jan 2001","policy","percent",4],
+[2001.73,"Post-9/11 low; -12% in a week","Sep 2001","shock","crash",4],
+[2003.95,"2003 recovery: +26% off the lows","2003","milestone","rally",5],
+[2005.62,"Hurricane Katrina; energy spike","Aug 2005","shock","oil",5],
+[2006.38,"May 2006 emerging-market selloff","May 2006","shock","globe",5],
+[2011.42,"QE2 ends; soft-patch scare","Jun 2011","shock","crash",5],
+[2013.95,"2013: S&amp;P +30%, best year since 1997","Dec 2013","milestone","rally",4],
+[2014.05,"Jan 2014 emerging-market wobble","Jan 2014","shock","globe",5],
+[2017.50,"2017: record-low volatility melt-up","2017","milestone","rally",4],
+[2019.25,"Q1 2019 V-shaped recovery","Mar 2019","milestone","rally",5],
+[2023.30,"'Magnificent Seven' lead the AI rally","May 2023","milestone","monitor",4],
+[1992.72,"Black Wednesday; UK crashes out of the ERM","Sep 1992","shock","warning",3],
+[1992.86,"Clinton elected; deficit-reduction rally","Nov 1992","milestone","ballot",5],
+[1993.60,"Bond bull: long-term yields hit record lows","1993","milestone","rally",4],
+[2003.70,"Mutual-fund late-trading scandal","Sep 2003","shock","doc",5],
+[2006.95,"Amaranth hedge-fund collapse","Sep 2006","shock","warning",5],
+[2012.85,"'Fiscal cliff' standoff","Dec 2012","policy","doc",4],
+[2015.30,"Grexit scare; Greek banks shut","Jun 2015","shock","globe",5],
+[2017.20,"Tax-cut rally; 'Trump bump'","Feb 2017","milestone","rally",5],
+[2021.62,"Delta-variant / peak-growth wobble","Aug 2021","shock","virus",5],
+[2024.30,"Sticky-inflation scare; 'higher for longer'","Apr 2024","shock","tag",5],
+[1959.50,"Post-recession bull; Dow tops 600","1959","milestone","rally",5],
+[1964.50,"Kennedy-Johnson tax cut fuels bull run","1964","milestone","rally",5],
+[1965.40,"'The little crash of 1965' (-10%)","May 1965","shock","crash",4],
+[1967.50,"1967 recovery rally (+20%)","1967","milestone","rally",5],
+[1976.50,"1976 election-year peak; Dow near 1,000","1976","milestone","rally",5],
+[1983.40,"1983 recovery: +17% as recession ends","1983","milestone","rally",5],
+[1986.30,"Oil collapses to $10; disinflation bull","1986","milestone","rally",4],
+[1988.40,"1988 post-crash recovery","1988","milestone","rally",5]
+]
+</script>
 
 <script>
 (function(){
@@ -134,82 +299,11 @@
 
   var START=1957.99, END=2026.67, BASE=10000;
 
-  /* events: tier 1 always; tier 2 shows in <=45y windows; tier 3 in <=18y windows */
-  /* tier 1 = always (Max view) · 2 = window <=48y · 3 = window <=22y · 4 = window <=10y
-     The list is deliberately dense: minor events drop out of the big picture but
-     re-appear the moment you zoom into a shorter time frame. */
-  var events=[
-    [1957.99,"Recession &amp; 'Sputnik' sell-off","Oct 1957","shock","crash",3],
-    [1960.30,"1960 recession bear market","1960","shock","crash",3],
-    [1962.40,"Kennedy Slide","May 1962","shock","crash",1],
-    [1966.30,"Credit-crunch bear market","1966","shock","percent",2],
-    [1968.40,"'Go-go' market peak","Nov 1968","milestone","rally",3],
-    [1970.40,"1969&ndash;70 bear-market low","May 1970","shock","crash",1],
-    [1971.63,"Nixon ends gold convertibility","Aug 1971","policy","star",2],
-    [1973.10,"Nifty Fifty peak","Jan 1973","milestone","rally",3],
-    [1973.80,"Oil embargo &amp; 1973&ndash;74 bear","Oct 1973","shock","oil",1],
-    [1974.78,"Bear-market bottom","Oct 1974","milestone","rally",3],
-    [1979.60,"Volcker tightening begins","Aug 1979","policy","percent",2],
-    [1979.90,"Second oil shock (Iran)","Nov 1979","shock","oil",3],
-    [1980.20,"Inflation peaks near 14%","Mar 1980","shock","tag",1],
-    [1981.55,"Double-dip recession begins","Jul 1981","shock","crash",3],
-    [1982.60,"Secular bull market begins","Aug 1982","milestone","rally",1],
-    [1984.40,"Continental Illinois bailout","May 1984","shock","bank",3],
-    [1987.80,"Black Monday","Oct 19, 1987","shock","crash",1],
-    [1989.80,"Oct 1989 mini-crash","Oct 1989","shock","crash",3],
-    [1990.58,"Gulf War &amp; recession","Aug 1990","shock","oil",1],
-    [1994.15,"Fed shock &amp; bond rout","Feb 1994","shock","percent",1],
-    [1994.95,"Mexican 'Tequila' crisis","Dec 1994","shock","globe",3],
-    [1995.15,"Barings Bank collapse","Feb 1995","shock","warning",3],
-    [1997.90,"Asian financial crisis","Oct 1997","shock","globe",2],
-    [1998.71,"LTCM &amp; Russia default","Sep 1998","shock","warning",2],
-    [2000.23,"Dot-com peak","Mar 2000","milestone","monitor",1],
-    [2001.20,"Nasdaq &minus;60% / recession","Mar 2001","shock","crash",3],
-    [2001.70,"9/11 attacks","Sep 2001","shock","tower",1],
-    [2002.53,"WorldCom collapse","Jul 2002","shock","doc",3],
-    [2002.77,"Bear-market bottom","Oct 2002","milestone","rally",2],
-    [2003.22,"Iraq war begins","Mar 2003","milestone","flag",2],
-    [2007.20,"Subprime lenders fail","Mar 2007","shock","house",3],
-    [2007.62,"Quant quake / BNP funds freeze","Aug 2007","shock","warning",3],
-    [2007.77,"Market peak / GFC begins","Oct 2007","shock","house",2],
-    [2008.22,"Bear Stearns rescue","Mar 2008","shock","bank",3],
-    [2008.71,"Lehman bankruptcy","Sep 15, 2008","shock","bank",1],
-    [2008.79,"TARP; money-market 'breaks the buck'","Oct 2008","policy","stamp",3],
-    [2009.19,"Market bottom","Mar 9, 2009","milestone","rally",1],
-    [2010.36,"Flash Crash","May 6, 2010","shock","bolt",3],
-    [2010.40,"Greece bailout #1","May 2010","shock","globe",4],
-    [2011.60,"U.S. downgrade &amp; euro crisis","Aug 2011","shock","warning",1],
-    [2011.90,"Euro crisis 2nd wave","Nov 2011","shock","globe",4],
-    [2012.55,"Draghi: 'whatever it takes'","Jul 2012","policy","percent",4],
-    [2013.38,"Taper tantrum","May 2013","shock","percent",2],
-    [2014.55,"Oil-price crash begins","Jun 2014","shock","oil",3],
-    [2015.04,"SNB unpegs the franc","Jan 2015","shock","warning",4],
-    [2015.66,"China devaluation","Aug 2015","shock","globe",2],
-    [2016.06,"Feb 2016 growth scare","Feb 2016","shock","crash",3],
-    [2016.48,"Brexit vote","Jun 2016","shock","ballot",2],
-    [2016.86,"U.S. election / reflation trade","Nov 2016","milestone","ballot",4],
-    [2018.10,"Volmageddon (XIV blow-up)","Feb 2018","shock","bolt",3],
-    [2018.96,"Q4 sell-off &amp; trade war","Dec 2018","shock","ship",1],
-    [2019.55,"Fed pivot to rate cuts","Jul 2019","policy","percent",3],
-    [2019.73,"Repo-market stress","Sep 2019","shock","percent",4],
-    [2020.19,"COVID-19 pandemic","Mar 2020","shock","virus",1],
-    [2020.30,"Oil futures go negative","Apr 2020","shock","oil",3],
-    [2021.05,"Meme-stock squeeze (GameStop)","Jan 2021","milestone","rally",3],
-    [2021.87,"'Transitory' inflation abandoned","Nov 2021","policy","tag",3],
-    [2022.05,"Growth / tech bear begins","Jan 2022","shock","crash",4],
-    [2022.30,"Fed hikes; inflation peaks 9.1%","2022","policy","rateup",1],
-    [2022.78,"UK gilt / LDI crisis","Sep 2022","shock","warning",3],
-    [2022.79,"Bear-market bottom","Oct 2022","milestone","rally",4],
-    [2023.19,"SVB &amp; Credit Suisse","Mar 2023","shock","bank",2],
-    [2023.42,"Debt-ceiling deal","Jun 2023","policy","doc",4],
-    [2023.60,"Fitch cuts U.S. rating","Aug 2023","shock","star",3],
-    [2023.83,"10-year yield peaks near 5%","Oct 2023","shock","percent",4],
-    [2024.60,"Yen carry-trade unwind","Aug 2024","shock","yen",2],
-    [2024.87,"Post-election rally","Nov 2024","milestone","ballot",4],
-    [2025.08,"AI / DeepSeek sell-off","Jan 2025","shock","monitor",3],
-    [2025.25,"Reciprocal tariffs","Apr 2025","policy","stamp",1],
-    [2025.60,"Tariff pause &amp; rebound","Aug 2025","milestone","rally",4]
-  ];
+  /* Events come from the <script id="event-data"> JSON block above (a curated
+     importance-ranked index). The level-of-detail selector keeps a roughly
+     constant number of the most important events on screen at every zoom. */
+  var events = JSON.parse(document.getElementById("event-data").textContent);
+  var DEFAULT_EVENT_COUNT = 14;   // recommended on-screen count; ~12 in the full-history view
 
   var ICONS={
     crash:'<polyline points="3,6 10,13 14,9 21,16"/><polyline points="21,10 21,16 15,16"/>',
@@ -297,7 +391,7 @@
   ].map(function(s){return '<div class="stat '+s.c+'"><div class="k">'+s.k+'</div><div class="v">'+s.v+'</div><div class="n">'+s.n+'</div></div>';}).join("");
 
   /* ============ CHART ======================================== */
-  var svg=document.getElementById("chart"), tip=document.getElementById("tip");
+  var svg=document.getElementById("chart");
   var W=1760,H=780, mL=82,mR=196,mT=44,mB=48;
   var pL=mL,pR=W-mR,pT=mT,pB=H-mB;
   var toneCol={shock:"var(--shock)",policy:"var(--policy)",milestone:"var(--milestone)"};
@@ -470,7 +564,10 @@
     // ---- events: keep a roughly CONSTANT count on screen at every zoom level ----
     // Show the ~TARGET most important events inside the window; a short window then
     // surfaces smaller events to fill the same quota (zoom in -> more detail).
-    var TARGET = span>55 ? 15 : span>30 ? 16 : 17;
+    var TARGET = Math.min(
+      (span > 55 ? DEFAULT_EVENT_COUNT - 2 : DEFAULT_EVENT_COUNT),
+      Math.max(6, Math.floor((pR - pL) / 118))
+    );
     var inWin = events.filter(function(e){return e[0]>=curDomain[0]-0.02 && e[0]<=curDomain[1]+0.02;})
                       .sort(function(a,b){return a[0]-b[0];});
     var vis;
@@ -565,34 +662,53 @@
     var t=curDomain[0]+(x-pL)/(pR-pL)*(curDomain[1]-curDomain[0]);
     var i=idxAt(t); if(i<curI0)i=curI0; var tx=curX(times[i]);
     var g=svg.querySelector("#hover"); if(!g)return;
-    var rows=[[EQ,curSc[0],"var(--eq)"],[BO,curSc[1],"var(--bond)"],[CA,curSc[2],"var(--cash)"]];
-    var h='<line class="cross" x1="'+tx.toFixed(1)+'" y1="'+pT+'" x2="'+tx.toFixed(1)+'" y2="'+pB+'"/>';
-    rows.forEach(function(r){h+='<circle cx="'+tx.toFixed(1)+'" cy="'+curY(r[0][i]*r[1]).toFixed(1)+'" r="4.5" fill="'+r[2]+'" stroke="var(--panel)" stroke-width="1.5"/>';});
+
+    var h=['<line class="cross" x1="'+tx.toFixed(1)+'" y1="'+pT+'" x2="'+tx.toFixed(1)+'" y2="'+pB+'"/>'];
+    var vs=[
+      {v:EQ[i]*curSc[0],col:"var(--eq)"},
+      {v:BO[i]*curSc[1],col:"var(--bond)"},
+      {v:CA[i]*curSc[2],col:"var(--cash)"}
+    ];
+    vs.forEach(function(o){ o.y0=curY(o.v); o.y=o.y0; o.txt=dispG(o.v); });
+    // dots sit exactly on each asset line
+    vs.forEach(function(o){ h.push('<circle cx="'+tx.toFixed(1)+'" cy="'+o.y0.toFixed(1)+'" r="4.5" fill="'+o.col+'" stroke="var(--panel)" stroke-width="1.5"/>'); });
+    // value labels ride on the lines (nudge apart only if they'd overlap)
+    vs.slice().sort(function(a,b){return a.y0-b.y0;}).forEach(function(o,k,arr){ if(k && o.y-arr[k-1].y<16) o.y=arr[k-1].y+16; });
+    var left = tx > pR-150;
+    vs.forEach(function(o){
+      var w=o.txt.length*7.3+14, y=Math.max(pT+9,Math.min(pB-9,o.y));
+      var px=left ? tx-9-w : tx+9;
+      h.push('<line x1="'+tx.toFixed(1)+'" y1="'+o.y0.toFixed(1)+'" x2="'+(left?px+w:px).toFixed(1)+'" y2="'+y.toFixed(1)+'" stroke="'+o.col+'" stroke-width="1" stroke-opacity="0.45"/>');
+      h.push('<rect x="'+px.toFixed(1)+'" y="'+(y-9).toFixed(1)+'" width="'+w.toFixed(1)+'" height="18" rx="3" fill="var(--panel)" stroke="'+o.col+'" stroke-width="1.2"/>');
+      h.push('<text x="'+(px+w/2).toFixed(1)+'" y="'+(y+3.5).toFixed(1)+'" text-anchor="middle" fill="'+o.col+'" font-size="11.5" font-weight="700" font-family="Arial,Helvetica,sans-serif">'+o.txt+'</text>');
+    });
     // date pill pinned on the x-axis
     var dlab=fmtDate(times[i]), dw=dlab.length*7.2+18;
-    var dx=Math.max(pL+dw/2, Math.min(pR-dw/2, tx));
-    h+='<rect x="'+(dx-dw/2).toFixed(1)+'" y="'+(pB+6)+'" width="'+dw.toFixed(1)+'" height="20" rx="4" fill="var(--ink)"/>'
-      +'<text x="'+dx.toFixed(1)+'" y="'+(pB+20)+'" text-anchor="middle" fill="var(--panel)" font-size="12" font-weight="600" font-family="Libre Franklin,sans-serif">'+dlab+'</text>';
-    g.innerHTML=h;
-    tip.className="tip on";
-    tip.innerHTML='<div class="td">'+dlab+(state.rebase?' &middot; since '+fmtDate(times[curI0]):'')+'</div>'
-      +'<div class="tr"><span><i class="dot" style="background:var(--eq)"></i>Stocks</span><b>'+dispG(EQ[i]*curSc[0])+'</b></div>'
-      +'<div class="tr"><span><i class="dot" style="background:var(--bond)"></i>Bonds</span><b>'+dispG(BO[i]*curSc[1])+'</b></div>'
-      +'<div class="tr"><span><i class="dot" style="background:var(--cash)"></i>Cash</span><b>'+dispG(CA[i]*curSc[2])+'</b></div>';
-    // tooltip follows the cursor
-    var r=svg.getBoundingClientRect();
-    var mx=lastC.cx-r.left, my=lastC.cy-r.top;
-    var tw=tip.offsetWidth, th=tip.offsetHeight;
-    var lx = mx+18; if(lx+tw>r.width-4) lx=mx-tw-18; if(lx<4)lx=4;
-    var ly = my+18; if(ly+th>r.height-4) ly=my-th-18; if(ly<4)ly=4;
-    tip.style.left=lx+"px"; tip.style.top=ly+"px";
+    var dpx=Math.max(pL+dw/2, Math.min(pR-dw/2, tx));
+    h.push('<rect x="'+(dpx-dw/2).toFixed(1)+'" y="'+(pB+6)+'" width="'+dw.toFixed(1)+'" height="20" rx="4" fill="var(--ink)"/>');
+    h.push('<text x="'+dpx.toFixed(1)+'" y="'+(pB+20)+'" text-anchor="middle" fill="var(--panel)" font-size="12" font-weight="600" font-family="Arial,Helvetica,sans-serif">'+dlab+'</text>');
+    g.innerHTML=h.join("");
   }
-  function endHover(){var g=svg.querySelector("#hover"); if(g)g.innerHTML=""; tip.className="tip";}
+  function endHover(){var g=svg.querySelector("#hover"); if(g)g.innerHTML="";}
   svg.addEventListener("mousemove",moveHover);
   svg.addEventListener("mouseleave",endHover);
-  svg.addEventListener("touchstart",moveHover,{passive:true});
-  svg.addEventListener("touchmove",moveHover,{passive:true});
-  svg.addEventListener("touchend",endHover);
+
+  var tch={x:0,y:0,mode:0,dom0:null};   // mode 0 undecided, 1 hover, 2 pan
+  svg.addEventListener("touchstart",function(e){
+    tch.x=e.touches[0].clientX; tch.y=e.touches[0].clientY; tch.mode=0; tch.dom0=state.dom.slice();
+  },{passive:true});
+  svg.addEventListener("touchmove",function(e){
+    var dx=e.touches[0].clientX-tch.x, dy=e.touches[0].clientY-tch.y;
+    if(tch.mode===0 && Math.abs(dx)+Math.abs(dy)>8) tch.mode = Math.abs(dx)>Math.abs(dy)*1.3 ? 2 : 1;
+    if(tch.mode===2){
+      var rw=svg.getBoundingClientRect().width||W, sp=tch.dom0[1]-tch.dom0[0];
+      var dyr=-(dx/rw)*(W/(pR-pL))*sp;
+      var n0=tch.dom0[0]+dyr,n1=tch.dom0[1]+dyr;
+      if(n0<START){n1+=START-n0;n0=START;} if(n1>END){n0-=n1-END;n1=END;}
+      state.dom=[n0,n1]; endHover(); scheduleRender();
+    } else { moveHover(e); }
+  },{passive:true});
+  svg.addEventListener("touchend",function(){ if(tch.mode!==2) endHover(); });
 
   /* ---- drag to pan left / right ---- */
   var drag={on:false,x0:0,dom0:null,moved:false};
@@ -608,9 +724,11 @@
   }
   svg.addEventListener("mousedown",function(evt){
     if(evt.button!==0)return;
+    evt.preventDefault();
     drag.on=true; drag.moved=false; drag.x0=evt.clientX; drag.dom0=state.dom.slice();
     endHover();
   });
+  svg.addEventListener("dragstart",function(e){e.preventDefault();});
   window.addEventListener("mousemove",function(evt){
     if(!drag.on)return;
     if(Math.abs(evt.clientX-drag.x0)>3){drag.moved=true; svg.classList.add("dragging");}
@@ -622,22 +740,36 @@
     drag.on=false; svg.classList.remove("dragging");
   });
 
-  /* ---- scroll-wheel zoom about the cursor ---- */
+  /* ---- wheel: vertical = zoom about cursor · horizontal (or Shift) = pan ---- */
   var wheelRAF=0;
+  function scheduleRender(){ if(!wheelRAF) wheelRAF=requestAnimationFrame(function(){wheelRAF=0; syncFrButtons(); render();}); }
+  function panByPx(px){
+    var rw=svg.getBoundingClientRect().width||W, sp=state.dom[1]-state.dom[0];
+    var dyr=(px/rw)*(W/(pR-pL))*sp;
+    var n0=state.dom[0]+dyr, n1=state.dom[1]+dyr;
+    if(n0<START){n1+=START-n0;n0=START;}
+    if(n1>END){n0-=n1-END;n1=END;}
+    state.dom=[n0,n1];
+  }
   svg.addEventListener("wheel",function(evt){
     evt.preventDefault();
-    if(Math.abs(evt.deltaY)<1) return;
+    var dx=evt.deltaX||0, dy=evt.deltaY||0;
+    if(evt.shiftKey && !dx){ dx=dy; dy=0; }              // Shift+wheel pans
+    if(Math.abs(dx) > Math.abs(dy)){                     // trackpad horizontal swipe -> pan
+      if(Math.abs(dx)<0.5) return;
+      panByPx(dx); scheduleRender(); return;
+    }
+    if(Math.abs(dy)<1) return;
     var x=localX(evt); if(x==null)return;
     x=Math.max(pL,Math.min(pR,x));
     var d0=state.dom[0], d1=state.dom[1], sp=d1-d0;
-    var tc=d0+(x-pL)/(pR-pL)*sp;                       // year under the cursor
-    var factor=Math.pow(1.0016, evt.deltaY);           // >1 zoom out, <1 zoom in
-    var nsp=Math.max(MINSPAN, Math.min(END-START, sp*factor));
+    var tc=d0+(x-pL)/(pR-pL)*sp;
+    var nsp=Math.max(MINSPAN, Math.min(END-START, sp*Math.pow(1.0016,dy)));
     var n0=tc-(tc-d0)*(nsp/sp), n1=n0+nsp;
     if(n0<START){ n0=START; n1=START+nsp; }
     if(n1>END){ n1=END; n0=END-nsp; }
     state.dom=[n0,n1];
-    if(!wheelRAF) wheelRAF=requestAnimationFrame(function(){wheelRAF=0; syncFrButtons(); render();});
+    scheduleRender();
   },{passive:false});
 
   var rt; window.addEventListener("resize",function(){clearTimeout(rt);rt=setTimeout(render,150);});
@@ -646,7 +778,7 @@
   /* ============ FOOTNOTE ==================================== */
   document.getElementById("foot").innerHTML=
     '<strong>How to read this.</strong> Illustrative growth of a single $10,000 investment made when the S&amp;P 500 launched (year-end 1957) and held through Sep 1, 2026, on a <strong>ratio (log) scale</strong>. '
-    +'Use the time-frame buttons or the scroll wheel to zoom about the cursor, and drag left / right to pan; the y-axis rescales to the visible window. A roughly <strong>constant number of events stays on screen at every zoom level</strong> &mdash; the most significant ones first, with finer detail filling in as you zoom into a period. Hover or tap the chart for values on any date. '
+    +'Zoom with the time-frame buttons or the mouse wheel (about the cursor); pan by dragging or with a two-finger / horizontal swipe. The y-axis rescales to the visible window, and a roughly <strong>constant number of events stays on screen at every zoom level</strong> &mdash; drawn from a curated importance-ranked index of ~115 market events (default '+DEFAULT_EVENT_COUNT+' on screen), most significant first, with finer detail filling in as you zoom into a period. Hover or tap the chart to read each asset&rsquo;s value on its own line. '
     +'Stocks are the S&amp;P 500 <strong>price index</strong> (39.99 &rarr; 7,631.47), price return only. Bonds and cash are <strong>total return</strong>, compounded year by year from published annual returns: bonds splice Ibbotson U.S. government bonds (1958&ndash;1975) into the Bloomberg U.S. Aggregate (1976&ndash;present); cash is 30-day U.S. Treasury bills. Because stocks exclude dividends while bonds and cash include income, the equity line understates stocks&rsquo; true lead. Past performance is not indicative of future results. '
     +'<br>Sources: S&amp;P Dow Jones Indices; Bloomberg Index Services; Ibbotson / Morningstar SBBI; U.S. Treasury; Federal Reserve (FRED). Annual-return figures are approximate. Data verified Sep 2026.';
 })();
