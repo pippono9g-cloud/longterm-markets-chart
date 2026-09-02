@@ -506,7 +506,9 @@
     return t;
   }
 
-  function render(){
+  function render(fast){
+    // fast = lightweight pass during an active gesture: redraw the lines + axes only,
+    // skip the (expensive) event annotation layer. A full render follows when motion stops.
     // clamp the domain
     var d1=Math.min(END,Math.max(START+MINSPAN,state.dom[1]));
     var d0=Math.max(START,Math.min(d1-MINSPAN,state.dom[0]));
@@ -597,9 +599,8 @@
     });
 
     // ---- events: cap how many of the IN-WINDOW events are drawn ----
-    // Wide windows -> a roughly constant ~14 (most important first). Narrow windows
-    // simply show whatever events actually fall inside them: a quiet year shows its
-    // one or two, a year like 2008 shows its whole cluster. No padding from outside.
+    var vis=[];
+    if(!fast){
     var TARGET = Math.min(
       (span > 55 ? DEFAULT_EVENT_COUNT - 2 : DEFAULT_EVENT_COUNT),
       Math.max(8, Math.floor((pR - pL) / 118))
@@ -669,17 +670,19 @@
       layer.push(iconSVG(e[4],col,ex,iy));
     });
     S.push(layer.join(""));
+    }  // end if(!fast)
     S.push('<g id="hover"></g>');
     S.push('<rect id="hitbox" x="'+pL+'" y="'+pT+'" width="'+(pR-pL)+'" height="'+(pB-pT)+'" fill="transparent"/>');
 
     svg.innerHTML=S.join("");
 
+    syncYearInputs();
+    if(fast) return;
     // sub line + event count note
     var cnt=vis.length, full=curDomain[0]<=START+0.05 && curDomain[1]>=END-0.05;
     document.getElementById("sub").innerHTML = full
       ? "$10,000 invested when the S&amp;P 500 began in 1957 &mdash; "+cnt+" defining events marked"
       : fmtDate(curDomain[0])+" &ndash; "+fmtDate(curDomain[1])+" &mdash; "+cnt+" event"+(cnt===1?"":"s")+" in view (scroll-wheel or drag to explore; type a year range above)";
-    syncYearInputs();
   }
 
   /* ============ HOVER / CROSSHAIR ============================ */
@@ -749,12 +752,18 @@
     if(n1>END){n1=END;n0=END-nsp;}
     state.dom=[n0,n1];
   }
+  // Block Safari's whole-page pinch-zoom so our touch handlers own the gesture.
   ["gesturestart","gesturechange","gestureend"].forEach(function(ev){
     svg.addEventListener(ev,function(e){e.preventDefault();},{passive:false});
   });
+
   function pinchInit(e){
-    tch.mode=3; tch.dom0=state.dom.slice(); tch.pd0=tdist(e)||1;
-    tch.pcy=clientToYear((e.touches[0].clientX+e.touches[1].clientX)/2);
+    tch.mode=3;
+    tch.dom0=state.dom.slice();
+    tch.pd0=tdist(e)||1;
+    tch.pmx0=(e.touches[0].clientX+e.touches[1].clientX)/2;
+    tch.pfrac=clientToFrac(tch.pmx0);        // where the fingers sit across the plot, 0..1
+    tch.pcy=clientToYear(tch.pmx0);          // the year currently under that point
     endHover();
   }
   svg.addEventListener("touchstart",function(e){
@@ -777,21 +786,21 @@
     if(tch.mode===9) return;
     if(e.touches.length>=2){
       e.preventDefault();
-      if(tch.mode!==3) pinchInit(e);                        // self-heal if the 2nd touchstart was missed
+      if(tch.mode!==3) pinchInit(e);                          // works even if 1 finger was already resting
       var d=tdist(e); if(d<1) return;
       var oldSpan=tch.dom0[1]-tch.dom0[0];
-      var nsp=Math.max(MINSPAN, Math.min(END-START, oldSpan*(tch.pd0/d)));   // finger spread -> zoom
-      var tc=(tch.pcy==null)?(tch.dom0[0]+tch.dom0[1])/2:tch.pcy;
-      var frac=clientToFrac((e.touches[0].clientX+e.touches[1].clientX)/2);  // finger midpoint now -> pan
-      var n0=tc - frac*nsp, n1=n0+nsp;
-      if(n0<START){n0=START;n1=START+nsp;}
-      if(n1>END){n1=END;n0=END-nsp;}
-      state.dom=[n0,n1]; scheduleRender(); return;
+      var nsp=Math.max(MINSPAN, Math.min(END-START, oldSpan*(tch.pd0/d)));   // finger spread -> zoom (reversible)
+      var mxNow=(e.touches[0].clientX+e.touches[1].clientX)/2;
+      // zoom about the anchor year, then pan by how far the midpoint has slid
+      var n0=tch.pcy - tch.pfrac*nsp;
+      var rw=svg.getBoundingClientRect().width||W;
+      n0 += -((mxNow-tch.pmx0)/rw)*(W/(pR-pL))*nsp;
+      n0=Math.max(START, Math.min(END-nsp, n0));
+      state.dom=[n0, n0+nsp]; scheduleRender(true); return;
     }
     if(e.touches.length!==1) return;
-    // one finger = scrub the value readout (two fingers do pan + zoom)
     e.preventDefault();
-    moveHover(e);
+    moveHover(e);                                             // one finger = scrub the readout
   },{passive:false});
   svg.addEventListener("touchend",function(e){
     // lifting a one-finger scrub leaves the readout frozen in place (it clears on the
@@ -824,8 +833,7 @@
   window.addEventListener("mousemove",function(evt){
     if(!drag.on)return;
     if(Math.abs(evt.clientX-drag.x0)>3){drag.moved=true; svg.classList.add("dragging");}
-    if(drag.moved){ panFrom(evt.clientX);
-      if(!wheelRAF) wheelRAF=requestAnimationFrame(function(){wheelRAF=0; syncFrButtons(); render();}); }
+    if(drag.moved){ panFrom(evt.clientX); scheduleRender(true); }
   });
   window.addEventListener("mouseup",function(){
     if(!drag.on)return;
@@ -833,8 +841,17 @@
   });
 
   /* ---- wheel: vertical = zoom about cursor · horizontal (or Shift) = pan ---- */
-  var wheelRAF=0;
-  function scheduleRender(){ if(!wheelRAF) wheelRAF=requestAnimationFrame(function(){wheelRAF=0; syncFrButtons(); render();}); }
+  var wheelRAF=0, fullTimer=0, pendFast=false;
+  function scheduleRender(fast){
+    if(fast) pendFast=true;
+    if(!wheelRAF) wheelRAF=requestAnimationFrame(function(){
+      wheelRAF=0; var f=pendFast; pendFast=false; syncFrButtons(); render(f);
+    });
+    if(fast){                                   // once motion stops, do one full (with events)
+      clearTimeout(fullTimer);
+      fullTimer=setTimeout(function(){ syncFrButtons(); render(false); }, 170);
+    }
+  }
   function panByPx(px){
     var rw=svg.getBoundingClientRect().width||W, sp=state.dom[1]-state.dom[0];
     var dyr=(px/rw)*(W/(pR-pL))*sp;
@@ -849,7 +866,7 @@
     if(evt.shiftKey && !dx){ dx=dy; dy=0; }              // Shift+wheel pans
     if(Math.abs(dx) > Math.abs(dy)){                     // trackpad horizontal swipe -> pan
       if(Math.abs(dx)<0.5) return;
-      panByPx(dx); scheduleRender(); return;
+      panByPx(dx); scheduleRender(true); return;
     }
     if(Math.abs(dy)<1) return;
     var x=localX(evt); if(x==null)return;
@@ -861,7 +878,7 @@
     if(n0<START){ n0=START; n1=START+nsp; }
     if(n1>END){ n1=END; n0=END-nsp; }
     state.dom=[n0,n1];
-    scheduleRender();
+    scheduleRender(true);
   },{passive:false});
 
   var rt; window.addEventListener("resize",function(){clearTimeout(rt);rt=setTimeout(render,150);});
