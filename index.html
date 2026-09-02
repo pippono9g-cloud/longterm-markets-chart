@@ -408,6 +408,7 @@
 
   /* ============ CHART ======================================== */
   var svg=document.getElementById("chart");
+  var hit=svg.parentNode;          // .chart-scroll - full-area touch/pointer surface
   var W=1760,H=780, mL=82,mR=196,mT=44,mB=48;
   var pL=mL,pR=W-mR,pT=mT,pB=H-mB;
   var toneCol={shock:"var(--shock)",policy:"var(--policy)",milestone:"var(--milestone)"};
@@ -538,6 +539,7 @@
     function eqAnchor(t){var i=idxAt(t);return sv(0,i);}
 
     var S=[];
+    S.push('<rect x="0" y="0" width="'+W+'" height="'+H+'" fill="transparent"/>');
     S.push('<defs><linearGradient id="eqfill" x1="0" y1="0" x2="0" y2="1">'
       +'<stop offset="0" stop-color="var(--eq-fill)" stop-opacity="0.15"/>'
       +'<stop offset="1" stop-color="var(--eq-fill)" stop-opacity="0.02"/></linearGradient></defs>');
@@ -730,8 +732,8 @@
     g.innerHTML=h.join("");
   }
   function endHover(){var g=svg.querySelector("#hover"); if(g)g.innerHTML="";}
-  svg.addEventListener("mousemove",moveHover);
-  svg.addEventListener("mouseleave",endHover);
+  hit.addEventListener("mousemove",moveHover);
+  hit.addEventListener("mouseleave",endHover);
 
   // ---- touch: 1 finger = read / pan · 2 fingers = pinch-zoom · double-tap = zoom in ----
   var tch={x:0,y:0,mode:0,dom0:null,pd0:0,pcy:null,lastTap:0};  // mode 0 undecided,1 read,2 pan,3 pinch,9 dbltap
@@ -754,11 +756,12 @@
   }
   // Block Safari's whole-page pinch-zoom so our touch handlers own the gesture.
   ["gesturestart","gesturechange","gestureend"].forEach(function(ev){
-    svg.addEventListener(ev,function(e){e.preventDefault();},{passive:false});
+    hit.addEventListener(ev,function(e){e.preventDefault();},{passive:false});
   });
 
   function pinchInit(e){
     tch.mode=3;
+    tch.g2=0;                                // 0 undecided · 1 = zoom only · 2 = pan only
     tch.dom0=state.dom.slice();
     tch.pd0=tdist(e)||1;
     tch.pmx0=(e.touches[0].clientX+e.touches[1].clientX)/2;
@@ -766,13 +769,15 @@
     tch.pcy=clientToYear(tch.pmx0);          // the year currently under that point
     endHover();
   }
-  svg.addEventListener("touchstart",function(e){
+  hit.addEventListener("touchstart",function(e){
     if(e.touches.length>=2){
+      e.preventDefault();
       pinchInit(e);
     }else{
       tch.mode=0; tch.x=e.touches[0].clientX; tch.y=e.touches[0].clientY;
       var now=Date.now();
       if(now-tch.lastTap<300){
+        e.preventDefault();
         tch.mode=9;
         zoomAbout(clientToYear(e.touches[0].clientX)||((state.dom[0]+state.dom[1])/2), (state.dom[1]-state.dom[0])/2.2, state.dom.slice());
         syncFrButtons(); render();
@@ -781,20 +786,29 @@
       }
       tch.lastTap=now;
     }
-  },{passive:true});
-  svg.addEventListener("touchmove",function(e){
+  },{passive:false});
+  hit.addEventListener("touchmove",function(e){
     if(tch.mode===9) return;
     if(e.touches.length>=2){
       e.preventDefault();
       if(tch.mode!==3) pinchInit(e);                          // works even if 1 finger was already resting
       var d=tdist(e); if(d<1) return;
       var oldSpan=tch.dom0[1]-tch.dom0[0];
-      var nsp=Math.max(MINSPAN, Math.min(END-START, oldSpan*(tch.pd0/d)));   // finger spread -> zoom (reversible)
       var mxNow=(e.touches[0].clientX+e.touches[1].clientX)/2;
-      // zoom about the anchor year, then pan by how far the midpoint has slid
-      var n0=tch.pcy - tch.pfrac*nsp;
-      var rw=svg.getBoundingClientRect().width||W;
-      n0 += -((mxNow-tch.pmx0)/rw)*(W/(pR-pL))*nsp;
+      var dDist=Math.abs(d-tch.pd0), dMid=Math.abs(mxNow-tch.pmx0);
+      // lock the gesture to EITHER zoom OR pan - never both at once
+      if(tch.g2===0){
+        if(dDist<12 && dMid<12) return;                       // wait until the intent is clear
+        tch.g2 = (dDist>=dMid) ? 1 : 2;
+      }
+      var nsp, n0, rw=svg.getBoundingClientRect().width||W;
+      if(tch.g2===1){                                         // spread/pinch -> zoom about the anchor
+        nsp=Math.max(MINSPAN, Math.min(END-START, oldSpan*(tch.pd0/d)));
+        n0=tch.pcy - tch.pfrac*nsp;
+      }else{                                                  // slide -> pan, span unchanged
+        nsp=oldSpan;
+        n0=tch.dom0[0] - ((mxNow-tch.pmx0)/rw)*(W/(pR-pL))*nsp;
+      }
       n0=Math.max(START, Math.min(END-nsp, n0));
       state.dom=[n0, n0+nsp]; scheduleRender(true); return;
     }
@@ -802,7 +816,7 @@
     e.preventDefault();
     moveHover(e);                                             // one finger = scrub the readout
   },{passive:false});
-  svg.addEventListener("touchend",function(e){
+  hit.addEventListener("touchend",function(e){
     // lifting a one-finger scrub leaves the readout frozen in place (it clears on the
     // next tap, on any pan/zoom re-render, or when a two-finger gesture starts).
     if(e.touches.length===0){ tch.mode=0; }
@@ -823,13 +837,13 @@
     if(n1>END){n0-=n1-END;n1=END;}
     state.dom=[n0,n1];
   }
-  svg.addEventListener("mousedown",function(evt){
+  hit.addEventListener("mousedown",function(evt){
     if(evt.button!==0)return;
     evt.preventDefault();
     drag.on=true; drag.moved=false; drag.x0=evt.clientX; drag.dom0=state.dom.slice();
     endHover();
   });
-  svg.addEventListener("dragstart",function(e){e.preventDefault();});
+  hit.addEventListener("dragstart",function(e){e.preventDefault();});
   window.addEventListener("mousemove",function(evt){
     if(!drag.on)return;
     if(Math.abs(evt.clientX-drag.x0)>3){drag.moved=true; svg.classList.add("dragging");}
@@ -860,7 +874,7 @@
     if(n1>END){n0-=n1-END;n1=END;}
     state.dom=[n0,n1];
   }
-  svg.addEventListener("wheel",function(evt){
+  hit.addEventListener("wheel",function(evt){
     evt.preventDefault();
     var dx=evt.deltaX||0, dy=evt.deltaY||0;
     if(evt.shiftKey && !dx){ dx=dy; dy=0; }              // Shift+wheel pans
