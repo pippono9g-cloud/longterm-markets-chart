@@ -49,7 +49,8 @@
   .tf-btn:focus-visible{outline:2px solid var(--eq);outline-offset:2px}
   .tf-btn:disabled{opacity:.4;cursor:not-allowed}
   figure{margin:12px 0 0;position:relative}
-  svg{display:block;width:100%;height:auto;overflow:visible;touch-action:pan-y}
+  svg{display:block;width:100%;height:auto;overflow:visible;touch-action:pan-y;cursor:crosshair}
+  svg.dragging{cursor:grabbing}
   .chart-scroll{overflow-x:hidden}
   .tip{position:absolute;pointer-events:none;z-index:5;background:var(--panel);border:1px solid var(--hair);
     border-radius:6px;padding:9px 11px;font-size:12.5px;box-shadow:0 8px 26px -10px rgba(11,28,46,.4);
@@ -140,10 +141,10 @@
   var events=[
     [1957.99,"Recession &amp; 'Sputnik' sell-off","Oct 1957","shock","crash",3],
     [1960.30,"1960 recession bear market","1960","shock","crash",3],
-    [1962.40,"Kennedy Slide","May 1962","shock","crash",2],
+    [1962.40,"Kennedy Slide","May 1962","shock","crash",1],
     [1966.30,"Credit-crunch bear market","1966","shock","percent",2],
     [1968.40,"'Go-go' market peak","Nov 1968","milestone","rally",3],
-    [1970.40,"1969&ndash;70 bear-market low","May 1970","shock","crash",2],
+    [1970.40,"1969&ndash;70 bear-market low","May 1970","shock","crash",1],
     [1971.63,"Nixon ends gold convertibility","Aug 1971","policy","star",2],
     [1973.10,"Nifty Fifty peak","Jan 1973","milestone","rally",3],
     [1973.80,"Oil embargo &amp; 1973&ndash;74 bear","Oct 1973","shock","oil",1],
@@ -305,7 +306,8 @@
     {k:"Max",yrs:END-START},{k:"40Y",yrs:40},{k:"25Y",yrs:25},
     {k:"15Y",yrs:15},{k:"10Y",yrs:10},{k:"5Y",yrs:5}
   ];
-  var state={fi:0,rebase:false,pct:false};
+  var state={fi:0,rebase:false,pct:false,dom:[START,END]};
+  var MINSPAN=1.25;
 
   var cbox=document.getElementById("controls");
   function mkBtn(txt,title){var b=document.createElement("button");b.className="tf-btn";b.type="button";
@@ -316,10 +318,21 @@
     var b=mkBtn(f.k);
     if(i===0)b.setAttribute("aria-pressed","true");
     b.addEventListener("click",function(){state.fi=i;
-      frButtons.forEach(function(x,j){x.setAttribute("aria-pressed",j===i?"true":"false");});
+      state.dom=[Math.max(START,END-f.yrs),END];
+      syncFrButtons();
       render();});
     return b;
   });
+  function syncFrButtons(){
+    // highlight the preset that matches the current window, else none
+    var span=state.dom[1]-state.dom[0], atEnd=Math.abs(state.dom[1]-END)<0.4;
+    var hit=-1;
+    frButtons.forEach(function(b,i){
+      var target=Math.min(FRAMES[i].yrs,END-START);
+      if(atEnd && Math.abs(span-target)<Math.max(0.6,target*0.02)) hit=i;
+    });
+    frButtons.forEach(function(b,i){ b.setAttribute("aria-pressed",i===hit?"true":"false"); });
+  }
 
   var s1=document.createElement("span");s1.className="lbl";s1.style.marginLeft="12px";s1.textContent="Y-axis";cbox.appendChild(s1);
   var bDollar=mkBtn("$ value","Dollar value of the investment"),
@@ -365,10 +378,12 @@
   }
 
   function render(){
-    var f=FRAMES[state.fi];
-    var s0=Math.max(START, END-f.yrs);
-    var i0=idxAt(s0), i1=times.length-1;
-    curDomain=[times[i0],END];
+    // clamp the domain
+    var d1=Math.min(END,Math.max(START+MINSPAN,state.dom[1]));
+    var d0=Math.max(START,Math.min(d1-MINSPAN,state.dom[0]));
+    state.dom=[d0,d1];
+    var i0=idxAt(d0), i1=idxAt(d1);
+    curDomain=[d0,d1];
 
     var sc=state.rebase?[BASE/EQ[i0],BASE/BO[i0],BASE/CA[i0]]:[1,1,1];
     curSc=sc; curI0=i0;
@@ -415,19 +430,21 @@
     // x grid
     var span=curDomain[1]-curDomain[0];
     var step= span>42?10 : span>22?5 : span>12?2 : 1;
-    var startYr=Math.ceil(curDomain[0]/step)*step;
-    for(var yr=startYr; yr<=2026; yr+=step){
+    var startYr=Math.ceil(curDomain[0]/step)*step, lastYr=Math.floor(curDomain[1]+1e-6);
+    for(var yr=startYr; yr<=lastYr; yr+=step){
       var x=X(yr); if(x<pL-1||x>pR+1)continue;
       S.push('<line class="gridline" x1="'+x.toFixed(1)+'" y1="'+pT+'" x2="'+x.toFixed(1)+'" y2="'+pB+'"/>');
-      if(Math.abs(yr-curDomain[0])>step*0.55 && Math.abs(yr-2026)>step*0.55)
+      if(Math.abs(yr-curDomain[0])>step*0.55 && Math.abs(yr-curDomain[1])>step*0.55)
         S.push('<text class="ax-strong" x="'+x.toFixed(1)+'" y="'+(pB+25)+'" text-anchor="middle">'+yr+'</text>');
     }
-    S.push('<text class="ax-strong" x="'+X(curDomain[0]).toFixed(1)+'" y="'+(pB+25)+'" text-anchor="middle">'+(Math.round(curDomain[0]*10)/10===Math.round(START*10)/10?"1957":Math.ceil(curDomain[0])) +'</text>');
-    S.push('<text class="ax-strong" x="'+X(END).toFixed(1)+'" y="'+(pB+25)+'" text-anchor="middle">2026</text>');
+    var lEdge = curDomain[0]<=START+0.05 ? "1957" : fmtDate(curDomain[0]);
+    var rEdge = curDomain[1]>=END-0.05 ? "2026" : fmtDate(curDomain[1]);
+    S.push('<text class="ax-strong" x="'+pL+'" y="'+(pB+25)+'" text-anchor="middle">'+lEdge+'</text>');
+    S.push('<text class="ax-strong" x="'+pR+'" y="'+(pB+25)+'" text-anchor="middle">'+rEdge+'</text>');
     S.push('<line class="baseline" x1="'+pL+'" y1="'+pB+'" x2="'+pR+'" y2="'+pB+'"/>');
 
     // area + lines
-    S.push('<path d="'+pathOf(0)+' L'+X(END).toFixed(2)+' '+pB+' L'+X(curDomain[0]).toFixed(2)+' '+pB+' Z" fill="url(#eqfill)"/>');
+    S.push('<path d="'+pathOf(0)+' L'+X(times[i1]).toFixed(2)+' '+pB+' L'+X(times[i0]).toFixed(2)+' '+pB+' Z" fill="url(#eqfill)"/>');
     S.push('<path d="'+pathOf(2)+'" fill="none" stroke="var(--cash)" stroke-width="2" stroke-linejoin="round"/>');
     S.push('<path d="'+pathOf(1)+'" fill="none" stroke="var(--bond)" stroke-width="2" stroke-linejoin="round"/>');
     S.push('<path d="'+pathOf(0)+'" fill="none" stroke="var(--eq)" stroke-width="2.4" stroke-linejoin="round"/>');
@@ -437,8 +454,8 @@
     if(state.rebase) S.push('<text class="series-end" x="'+(X(curDomain[0])+8)+'" y="'+(Y(sv(0,i0))+20)+'" fill="var(--ink-soft)">'+(state.pct?"+0%":"$10,000")+'</text>');
     [["var(--eq)",0],["var(--bond)",1],["var(--cash)",2]].forEach(function(p){
       var ey=Y(sv(p[1],i1));
-      S.push('<circle cx="'+X(END).toFixed(1)+'" cy="'+ey.toFixed(1)+'" r="4.5" fill="'+p[0]+'"/>');
-      S.push('<text class="series-end" x="'+(X(END)+12)+'" y="'+(ey+4).toFixed(1)+'" fill="'+p[0]+'">'+disp(sv(p[1],i1))+'</text>');
+      S.push('<circle cx="'+pR.toFixed(1)+'" cy="'+ey.toFixed(1)+'" r="4.5" fill="'+p[0]+'"/>');
+      S.push('<text class="series-end" x="'+(pR+12)+'" y="'+(ey+4).toFixed(1)+'" fill="'+p[0]+'">'+disp(sv(p[1],i1))+'</text>');
     });
 
     // legend
@@ -453,8 +470,8 @@
     // ---- events: keep a roughly CONSTANT count on screen at every zoom level ----
     // Show the ~TARGET most important events inside the window; a short window then
     // surfaces smaller events to fill the same quota (zoom in -> more detail).
-    var TARGET = span>55 ? 15 : 17;
-    var inWin = events.filter(function(e){return e[0]>=curDomain[0]-0.02 && e[0]<=END+0.02;})
+    var TARGET = span>55 ? 15 : span>30 ? 16 : 17;
+    var inWin = events.filter(function(e){return e[0]>=curDomain[0]-0.02 && e[0]<=curDomain[1]+0.02;})
                       .sort(function(a,b){return a[0]-b[0];});
     var vis;
     if(inWin.length<=TARGET){ vis=inWin.slice(); }
@@ -474,6 +491,26 @@
         }
       }
       vis.sort(function(a,b){return a[0]-b[0];});
+    }
+    // fill conspicuous empty stretches (so no era of the visible window looks blank)
+    if(inWin.length>vis.length){
+      var rest=inWin.filter(function(e){return vis.indexOf(e)<0;});
+      for(var pass=0;pass<3;pass++){
+        var edges=[curDomain[0]].concat(vis.map(function(e){return e[0];})),g;
+        edges.push(curDomain[1]);
+        var gi=-1,gmax=0;
+        for(g=0;g<edges.length-1;g++){var w=edges[g+1]-edges[g]; if(w>gmax){gmax=w;gi=g;}}
+        if(gmax < span/5.5) break;
+        var lo=edges[gi],hi=edges[gi+1],mid=(lo+hi)/2,pick=null,pri=1e9;
+        rest.forEach(function(e){
+          if(e[0]<=lo||e[0]>=hi)return;
+          var score=e[5]*100+Math.abs(e[0]-mid);
+          if(score<pri){pri=score;pick=e;}
+        });
+        if(!pick)break;
+        vis.push(pick); rest.splice(rest.indexOf(pick),1);
+        vis.sort(function(a,b){return a[0]-b[0];});
+      }
     }
     var placed=[], layer=[];
     function ov(a,b){return !(a.x1<b.x0||a.x0>b.x1||a.y1<b.y0||a.y0>b.y1);}
@@ -505,10 +542,10 @@
     svg.innerHTML=S.join("");
 
     // sub line + event count note
-    var cnt=vis.length;
-    document.getElementById("sub").innerHTML = f.k==="Max"
+    var cnt=vis.length, full=curDomain[0]<=START+0.05 && curDomain[1]>=END-0.05;
+    document.getElementById("sub").innerHTML = full
       ? "$10,000 invested when the S&amp;P 500 began in 1957 &mdash; "+cnt+" defining events marked"
-      : "Zoomed to the last "+f.k+" &mdash; "+cnt+" events (about the same count at every zoom; smaller events appear as you look closer)";
+      : fmtDate(curDomain[0])+" &ndash; "+fmtDate(curDomain[1])+" &mdash; "+cnt+" events (about the same count at every zoom; scroll-wheel to zoom, smaller events appear as you look closer)";
   }
 
   /* ============ HOVER / CROSSHAIR ============================ */
@@ -522,6 +559,7 @@
     return pt.matrixTransform(m.inverse()).x;
   }
   function moveHover(evt){
+    if(drag.on) return;
     var x=localX(evt); if(x==null)return;
     x=Math.max(pL,Math.min(pR,x));
     var t=curDomain[0]+(x-pL)/(pR-pL)*(curDomain[1]-curDomain[0]);
@@ -556,13 +594,59 @@
   svg.addEventListener("touchmove",moveHover,{passive:true});
   svg.addEventListener("touchend",endHover);
 
+  /* ---- drag to pan left / right ---- */
+  var drag={on:false,x0:0,dom0:null,moved:false};
+  function panFrom(clientX){
+    var sp=drag.dom0[1]-drag.dom0[0];
+    var dx=clientX-drag.x0;
+    var r=svg.getBoundingClientRect();
+    var dyr=-(dx/r.width)*(W/(pR-pL))*sp;      // pixels -> years, account for plot inset
+    var n0=drag.dom0[0]+dyr, n1=drag.dom0[1]+dyr;
+    if(n0<START){n1+=START-n0;n0=START;}
+    if(n1>END){n0-=n1-END;n1=END;}
+    state.dom=[n0,n1];
+  }
+  svg.addEventListener("mousedown",function(evt){
+    if(evt.button!==0)return;
+    drag.on=true; drag.moved=false; drag.x0=evt.clientX; drag.dom0=state.dom.slice();
+    endHover();
+  });
+  window.addEventListener("mousemove",function(evt){
+    if(!drag.on)return;
+    if(Math.abs(evt.clientX-drag.x0)>3){drag.moved=true; svg.classList.add("dragging");}
+    if(drag.moved){ panFrom(evt.clientX);
+      if(!wheelRAF) wheelRAF=requestAnimationFrame(function(){wheelRAF=0; syncFrButtons(); render();}); }
+  });
+  window.addEventListener("mouseup",function(){
+    if(!drag.on)return;
+    drag.on=false; svg.classList.remove("dragging");
+  });
+
+  /* ---- scroll-wheel zoom about the cursor ---- */
+  var wheelRAF=0;
+  svg.addEventListener("wheel",function(evt){
+    evt.preventDefault();
+    if(Math.abs(evt.deltaY)<1) return;
+    var x=localX(evt); if(x==null)return;
+    x=Math.max(pL,Math.min(pR,x));
+    var d0=state.dom[0], d1=state.dom[1], sp=d1-d0;
+    var tc=d0+(x-pL)/(pR-pL)*sp;                       // year under the cursor
+    var factor=Math.pow(1.0016, evt.deltaY);           // >1 zoom out, <1 zoom in
+    var nsp=Math.max(MINSPAN, Math.min(END-START, sp*factor));
+    var n0=tc-(tc-d0)*(nsp/sp), n1=n0+nsp;
+    if(n0<START){ n0=START; n1=START+nsp; }
+    if(n1>END){ n1=END; n0=END-nsp; }
+    state.dom=[n0,n1];
+    if(!wheelRAF) wheelRAF=requestAnimationFrame(function(){wheelRAF=0; syncFrButtons(); render();});
+  },{passive:false});
+
   var rt; window.addEventListener("resize",function(){clearTimeout(rt);rt=setTimeout(render,150);});
-  render();
+  syncFrButtons(); render();
 
   /* ============ FOOTNOTE ==================================== */
   document.getElementById("foot").innerHTML=
     '<strong>How to read this.</strong> Illustrative growth of a single $10,000 investment made when the S&amp;P 500 launched (year-end 1957) and held through Sep 1, 2026, on a <strong>ratio (log) scale</strong>. '
-    +'Use the time-frame buttons to zoom; the y-axis rescales to the visible window and <strong>more market events appear the further you zoom in</strong> (major events always shown, secondary and minor events revealed in shorter windows). Hover or tap the chart for values on any date. '
+    +'Use the time-frame buttons or the scroll wheel to zoom about the cursor, and drag left / right to pan; the y-axis rescales to the visible window. A roughly <strong>constant number of events stays on screen at every zoom level</strong> &mdash; the most significant ones first, with finer detail filling in as you zoom into a period. Hover or tap the chart for values on any date. '
     +'Stocks are the S&amp;P 500 <strong>price index</strong> (39.99 &rarr; 7,631.47), price return only. Bonds and cash are <strong>total return</strong>, compounded year by year from published annual returns: bonds splice Ibbotson U.S. government bonds (1958&ndash;1975) into the Bloomberg U.S. Aggregate (1976&ndash;present); cash is 30-day U.S. Treasury bills. Because stocks exclude dividends while bonds and cash include income, the equity line understates stocks&rsquo; true lead. Past performance is not indicative of future results. '
     +'<br>Sources: S&amp;P Dow Jones Indices; Bloomberg Index Services; Ibbotson / Morningstar SBBI; U.S. Treasury; Federal Reserve (FRED). Annual-return figures are approximate. Data verified Sep 2026.';
 })();
