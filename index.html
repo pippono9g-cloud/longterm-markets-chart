@@ -505,10 +505,12 @@
   }
 
   /* ============ HOVER / CROSSHAIR ============================ */
-  var pt=svg.createSVGPoint();
+  var pt=svg.createSVGPoint(), lastC={cx:0,cy:0};
   function localX(evt){
-    pt.x=(evt.touches?evt.touches[0].clientX:evt.clientX);
-    pt.y=(evt.touches?evt.touches[0].clientY:evt.clientY);
+    var cx=(evt.touches?evt.touches[0].clientX:evt.clientX);
+    var cy=(evt.touches?evt.touches[0].clientY:evt.clientY);
+    lastC.cx=cx; lastC.cy=cy;
+    pt.x=cx; pt.y=cy;
     var m=svg.getScreenCTM(); if(!m)return null;
     return pt.matrixTransform(m.inverse()).x;
   }
@@ -521,17 +523,24 @@
     var rows=[[EQ,curSc[0],"var(--eq)"],[BO,curSc[1],"var(--bond)"],[CA,curSc[2],"var(--cash)"]];
     var h='<line class="cross" x1="'+tx.toFixed(1)+'" y1="'+pT+'" x2="'+tx.toFixed(1)+'" y2="'+pB+'"/>';
     rows.forEach(function(r){h+='<circle cx="'+tx.toFixed(1)+'" cy="'+curY(r[0][i]*r[1]).toFixed(1)+'" r="4.5" fill="'+r[2]+'" stroke="var(--panel)" stroke-width="1.5"/>';});
+    // date pill pinned on the x-axis
+    var dlab=fmtDate(times[i]), dw=dlab.length*7.2+18;
+    var dx=Math.max(pL+dw/2, Math.min(pR-dw/2, tx));
+    h+='<rect x="'+(dx-dw/2).toFixed(1)+'" y="'+(pB+6)+'" width="'+dw.toFixed(1)+'" height="20" rx="4" fill="var(--ink)"/>'
+      +'<text x="'+dx.toFixed(1)+'" y="'+(pB+20)+'" text-anchor="middle" fill="var(--panel)" font-size="12" font-weight="600" font-family="Libre Franklin,sans-serif">'+dlab+'</text>';
     g.innerHTML=h;
     tip.className="tip on";
-    tip.innerHTML='<div class="td">'+fmtDate(times[i])+(state.rebase?' &middot; since '+fmtDate(times[curI0]):'')+'</div>'
+    tip.innerHTML='<div class="td">'+dlab+(state.rebase?' &middot; since '+fmtDate(times[curI0]):'')+'</div>'
       +'<div class="tr"><span><i class="dot" style="background:var(--eq)"></i>Stocks</span><b>'+dispG(EQ[i]*curSc[0])+'</b></div>'
       +'<div class="tr"><span><i class="dot" style="background:var(--bond)"></i>Bonds</span><b>'+dispG(BO[i]*curSc[1])+'</b></div>'
       +'<div class="tr"><span><i class="dot" style="background:var(--cash)"></i>Cash</span><b>'+dispG(CA[i]*curSc[2])+'</b></div>';
-    var fig=svg.parentNode;
-    var fw=fig.clientWidth, px=tx/W*fw;
-    var tw=tip.offsetWidth;
-    tip.style.left=Math.max(4,Math.min(fw-tw-4, px+16))+"px";
-    tip.style.top=Math.max(4, pT/H*fig.clientHeight)+"px";
+    // tooltip follows the cursor
+    var r=svg.getBoundingClientRect();
+    var mx=lastC.cx-r.left, my=lastC.cy-r.top;
+    var tw=tip.offsetWidth, th=tip.offsetHeight;
+    var lx = mx+18; if(lx+tw>r.width-4) lx=mx-tw-18; if(lx<4)lx=4;
+    var ly = my+18; if(ly+th>r.height-4) ly=my-th-18; if(ly<4)ly=4;
+    tip.style.left=lx+"px"; tip.style.top=ly+"px";
   }
   function endHover(){var g=svg.querySelector("#hover"); if(g)g.innerHTML=""; tip.className="tip";}
   svg.addEventListener("mousemove",moveHover);
