@@ -51,6 +51,10 @@
   .tf-btn[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
   .tf-btn:focus-visible{outline:2px solid var(--scb);outline-offset:2px}
   .tf-btn:disabled{opacity:.38;cursor:not-allowed}
+  .tf-btn.switch{padding:3px 4px;display:inline-flex;gap:3px;align-items:center;background:var(--soft);border-color:var(--ink)}
+  .tf-btn.switch b,.tf-btn.switch span{padding:3px 11px;border-radius:999px;font-size:12.5px;line-height:1.35;font-weight:700}
+  .tf-btn.switch b{background:var(--ink);color:#fff}
+  .tf-btn.switch span{color:var(--ink-mute);font-weight:600}
   figure{margin:12px 0 0;position:relative}
   svg{display:block;width:100%;height:auto;overflow:visible;touch-action:pan-y;cursor:crosshair;
     -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
@@ -400,7 +404,7 @@
     {k:"Max",yrs:END-START},{k:"40Y",yrs:40},{k:"25Y",yrs:25},
     {k:"15Y",yrs:15},{k:"10Y",yrs:10},{k:"5Y",yrs:5}
   ];
-  var state={fi:0,rebase:false,pct:false,dom:[START,END]};
+  var state={fi:0,rebase:true,pct:true,dom:[START,END]};   // default: % return, rebased to window
   var MINSPAN=1.25;
 
   var cbox=document.getElementById("controls");
@@ -429,17 +433,18 @@
   }
 
   var s1=document.createElement("span");s1.className="lbl";s1.style.marginLeft="12px";s1.textContent="Y-axis";cbox.appendChild(s1);
-  var bDollar=mkBtn("$ from 1957","Dollar value of the original $10,000 invested in 1957"),
-      bPct=mkBtn("% in window","Cumulative % return since the left edge of the visible window (each line restarts at 0%)");
-  bDollar.setAttribute("aria-pressed","true");
-  function setUnit(pct){
-    state.pct=pct; state.rebase=pct;   // % mode = rebased to the window's left edge; $ mode = from 1957
-    bDollar.setAttribute("aria-pressed",pct?"false":"true");
-    bPct.setAttribute("aria-pressed",pct?"true":"false");
-    render();
+  var uBtn=mkBtn("","Switch the y-axis between % return (since the left edge of the visible window) and $ value (from 1957). Click to toggle.");
+  uBtn.classList.add("switch");
+  function paintUnit(){
+    uBtn.innerHTML = state.pct
+      ? '<b>% return</b><span>$ value</span>'
+      : '<span>% return</span><b>$ value</b>';
   }
-  bDollar.addEventListener("click",function(){setUnit(false);});
-  bPct.addEventListener("click",function(){setUnit(true);});
+  uBtn.addEventListener("click",function(){
+    state.pct=!state.pct; state.rebase=state.pct;
+    paintUnit(); render();
+  });
+  paintUnit();
 
   var curX,curY,curDomain,curSc,curI0; // closures updated per render, used by hover
 
@@ -449,7 +454,7 @@
       for(var i=steps.length-1;i>=0;i--){if(steps[i]<=r+1e-9){s=steps[i];break;}}return s*d;}
     function ceilNice(x){var d=Math.pow(10,Math.floor(Math.log(x)/Math.LN10));var r=x/d;var s=10;
       for(var i=0;i<steps.length;i++){if(steps[i]>=r-1e-9){s=steps[i];break;}}return s*d;}
-    return [floorNice(lo/1.06), ceilNice(hi*1.10)];
+    return [floorNice(lo/(state.pct?1.015:1.06)), ceilNice(hi*1.10)];
   }
   function logTicks(lo,hi){
     var t=[],e0=Math.floor(Math.log(lo)/Math.LN10),e1=Math.ceil(Math.log(hi)/Math.LN10);
