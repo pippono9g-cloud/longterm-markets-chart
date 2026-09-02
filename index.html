@@ -1,0 +1,505 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stocks, Bonds &amp; Cash Since 1957</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+  :root{
+    --ground:#FBFAF6; --panel:#FFFFFF; --ink:#0B1C2E; --ink-soft:#4A5A6A; --ink-mute:#8A97A3;
+    --grid:#E6E1D4; --hair:#D8D2C2; --eq:#1F4E8C; --eq-fill:#1F4E8C; --bond:#C07C1E; --cash:#6B7A88;
+    --shock:#B23B2E; --policy:#1F4E8C; --milestone:#2E7D6B; --halo:#FFFFFF; --btn:#F2EFE6;
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --ground:#0C1420; --panel:#111C2A; --ink:#EEF2F6; --ink-soft:#A9B6C2; --ink-mute:#6E7C89;
+      --grid:#1E2C3B; --hair:#263547; --eq:#5FA0DC; --eq-fill:#5FA0DC; --bond:#E0A44C; --cash:#9AAAB8;
+      --shock:#E1685A; --policy:#5FA0DC; --milestone:#54B79F; --halo:#111C2A; --btn:#1A2836;
+    }
+  }
+  :root[data-theme="dark"]{
+    --ground:#0C1420; --panel:#111C2A; --ink:#EEF2F6; --ink-soft:#A9B6C2; --ink-mute:#6E7C89;
+    --grid:#1E2C3B; --hair:#263547; --eq:#5FA0DC; --eq-fill:#5FA0DC; --bond:#E0A44C; --cash:#9AAAB8;
+    --shock:#E1685A; --policy:#5FA0DC; --milestone:#54B79F; --halo:#111C2A; --btn:#1A2836;
+  }
+  *{box-sizing:border-box}
+  body{background:var(--ground);color:var(--ink);margin:0;
+    font-family:"Libre Franklin",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    -webkit-font-smoothing:antialiased;line-height:1.45}
+  .wrap{max-width:1820px;margin:0 auto;padding:26px 22px 40px}
+  .card{background:var(--panel);border:1px solid var(--hair);border-radius:6px;padding:30px 34px 26px;
+    box-shadow:0 1px 0 rgba(11,28,46,.04),0 14px 40px -22px rgba(11,28,46,.28)}
+  .eyebrow{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 9px}
+  h1{font-size:clamp(28px,3.6vw,44px);font-weight:900;letter-spacing:-.02em;margin:0 0 6px;text-wrap:balance}
+  .sub{font-size:clamp(14px,1.5vw,18px);font-weight:600;color:var(--eq);margin:0 0 20px}
+  .stats{display:flex;flex-wrap:wrap;gap:12px;margin:0 0 18px}
+  .stat{border:1px solid var(--hair);border-radius:5px;padding:11px 15px 10px;min-width:184px;background:var(--ground)}
+  .stat .k{font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-mute);display:flex;align-items:center;gap:7px}
+  .stat .k::before{content:"";width:12px;height:3px;border-radius:2px;background:var(--c,var(--ink))}
+  .stat.eq{--c:var(--eq)} .stat.bond{--c:var(--bond)} .stat.cash{--c:var(--cash)}
+  .stat .v{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:22px;font-weight:600;margin-top:2px;font-variant-numeric:tabular-nums}
+  .stat .n{font-size:12px;color:var(--ink-soft);font-weight:500}
+  .controls{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 6px}
+  .controls .lbl{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-mute);margin-right:4px}
+  .tf-btn{font:inherit;font-size:13px;font-weight:600;color:var(--ink-soft);background:var(--btn);
+    border:1px solid var(--hair);border-radius:999px;padding:5px 13px;cursor:pointer;transition:.12s}
+  .tf-btn:hover{border-color:var(--ink-mute)}
+  .tf-btn[aria-pressed="true"]{background:var(--eq);border-color:var(--eq);color:#fff}
+  .tf-btn:focus-visible{outline:2px solid var(--eq);outline-offset:2px}
+  .tf-btn:disabled{opacity:.4;cursor:not-allowed}
+  figure{margin:12px 0 0;position:relative}
+  svg{display:block;width:100%;height:auto;overflow:visible;touch-action:pan-y}
+  .chart-scroll{overflow-x:hidden}
+  .tip{position:absolute;pointer-events:none;z-index:5;background:var(--panel);border:1px solid var(--hair);
+    border-radius:6px;padding:9px 11px;font-size:12.5px;box-shadow:0 8px 26px -10px rgba(11,28,46,.4);
+    min-width:172px;opacity:0;transition:opacity .1s}
+  .tip.on{opacity:1}
+  .tip .td{font-weight:700;font-size:12px;letter-spacing:.02em;margin-bottom:5px;color:var(--ink)}
+  .tip .tr{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:2px 0}
+  .tip .tr span{display:flex;align-items:center;gap:6px;color:var(--ink-soft);font-weight:500}
+  .tip .tr b{font-family:"IBM Plex Mono",monospace;font-weight:600;font-variant-numeric:tabular-nums;color:var(--ink)}
+  .tip .dot{width:9px;height:9px;border-radius:2px;flex:none}
+  .foot{margin:16px 0 0;font-size:11.5px;line-height:1.6;color:var(--ink-mute);border-top:1px solid var(--hair);padding-top:11px}
+  .foot strong{color:var(--ink-soft);font-weight:600}
+  text{font-family:"Libre Franklin",sans-serif}
+  .ax{fill:var(--ink-mute);font-size:13px;font-weight:500}
+  .ax-strong{fill:var(--ink-soft);font-size:13px;font-weight:600}
+  .gridline{stroke:var(--grid);stroke-width:1}
+  .gridline.minor{stroke-dasharray:2 3;opacity:.6}
+  .baseline{stroke:var(--ink-soft);stroke-width:1.5}
+  .evt-label{fill:var(--ink);font-size:12px;font-weight:600}
+  .evt-date{fill:var(--ink-mute);font-size:11px;font-weight:500}
+  .series-end{font-family:"IBM Plex Mono",monospace;font-size:13px;font-weight:600;font-variant-numeric:tabular-nums}
+  .cross{stroke:var(--ink-soft);stroke-width:1;stroke-dasharray:3 3;opacity:.7}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <p class="eyebrow">1957 &ndash; 2026 &nbsp;&bull;&nbsp; U.S. dollars &nbsp;&bull;&nbsp; growth of a single $10,000 investment &nbsp;&bull;&nbsp; ratio scale</p>
+    <h1>Stocks, bonds &amp; cash over the long run</h1>
+    <p class="sub" id="sub">$10,000 invested when the S&amp;P 500 began in 1957, held through every crisis since</p>
+
+    <div class="stats" id="stats"></div>
+
+    <div class="controls" id="controls">
+      <span class="lbl">Time frame</span>
+    </div>
+
+    <figure>
+      <div class="chart-scroll">
+        <svg id="chart" viewBox="0 0 1760 780" role="img"
+             aria-label="Interactive logarithmic chart of $10,000 invested in U.S. stocks, bonds and cash since 1957, with adjustable time frame and event annotations that reveal more detail when zoomed in."></svg>
+      </div>
+      <div class="tip" id="tip"></div>
+    </figure>
+
+    <p class="foot" id="foot"></p>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ============ DATA ============================================ */
+  var spAnchors=[
+    [1957.99,39.99],[1959.99,59.89],[1961.99,71.55],[1962.50,52.32],[1962.99,63.10],
+    [1965.99,92.43],[1966.80,73.20],[1967.99,96.47],[1968.99,103.86],[1970.40,69.29],
+    [1971.99,102.09],[1972.99,118.05],[1974.02,96.11],[1974.80,62.28],[1974.99,68.56],
+    [1976.99,107.46],[1978.99,96.11],[1980.99,135.76],[1982.60,102.42],[1982.99,140.64],
+    [1985.99,211.28],[1987.63,336.77],[1987.80,224.84],[1987.99,247.08],[1990.80,295.46],
+    [1990.99,330.22],[1995.99,615.93],[1998.99,1229.23],[2000.23,1527.46],[2000.99,1320.28],
+    [2002.77,776.76],[2002.99,879.82],[2007.77,1565.15],[2007.99,1468.36],[2009.19,676.53],
+    [2009.99,1115.10],[2013.99,1848.36],[2015.50,2130.82],[2016.02,1829.08],[2017.99,2673.61],
+    [2018.99,2506.85],[2020.12,3386.15],[2020.22,2237.40],[2020.99,3756.07],[2021.99,4766.18],
+    [2022.78,3577.03],[2022.99,3839.50],[2024.99,5881.63],[2025.99,6550.00],[2026.67,7631.47]
+  ];
+  var bondRet={1958:-0.5,1959:-0.3,1960:11.6,1961:2.1,1962:5.6,1963:1.6,1964:4.0,1965:1.0,
+    1966:4.7,1967:1.0,1968:4.5,1969:-0.7,1970:16.9,1971:8.7,1972:5.2,1973:4.6,1974:5.7,1975:7.8,
+    1976:12.9,1977:1.4,1978:1.4,1979:1.9,1980:2.7,1981:6.3,1982:32.6,1983:8.4,1984:15.1,1985:22.1,
+    1986:15.3,1987:2.8,1988:7.9,1989:14.5,1990:9.0,1991:16.0,1992:7.4,1993:9.8,1994:-2.9,1995:18.5,
+    1996:3.6,1997:9.7,1998:8.7,1999:-0.8,2000:11.6,2001:8.4,2002:10.3,2003:4.1,2004:4.3,2005:2.4,
+    2006:4.3,2007:7.0,2008:5.2,2009:5.9,2010:6.5,2011:7.8,2012:4.2,2013:-2.0,2014:6.0,2015:0.5,
+    2016:2.6,2017:3.5,2018:0.0,2019:8.7,2020:7.5,2021:-1.5,2022:-13.0,2023:5.5,2024:1.3,2025:4.0,2026:3.0};
+  var cashRet={1958:1.5,1959:3.0,1960:2.7,1961:2.1,1962:2.7,1963:3.1,1964:3.5,1965:3.9,1966:4.8,
+    1967:4.2,1968:5.2,1969:6.6,1970:6.5,1971:4.4,1972:3.8,1973:6.9,1974:8.0,1975:5.8,1976:5.1,
+    1977:5.1,1978:7.2,1979:10.4,1980:11.2,1981:14.7,1982:10.5,1983:8.8,1984:9.8,1985:7.7,1986:6.2,
+    1987:5.5,1988:6.4,1989:8.4,1990:7.8,1991:5.6,1992:3.5,1993:2.9,1994:3.9,1995:5.6,1996:5.2,
+    1997:5.3,1998:4.9,1999:4.7,2000:5.9,2001:3.9,2002:1.7,2003:1.0,2004:1.2,2005:3.0,2006:4.8,
+    2007:4.7,2008:1.8,2009:0.2,2010:0.1,2011:0.1,2012:0.1,2013:0.1,2014:0.0,2015:0.0,2016:0.3,
+    2017:0.8,2018:1.9,2019:2.3,2020:0.5,2021:0.0,2022:1.5,2023:5.0,2024:5.2,2025:4.5,2026:3.2};
+
+  var START=1957.99, END=2026.67, BASE=10000;
+
+  /* events: tier 1 always; tier 2 shows in <=45y windows; tier 3 in <=18y windows */
+  var events=[
+    [1962.40,"Kennedy Slide","May 1962","shock","crash",2],
+    [1966.30,"Credit-crunch bear market","1966","shock","percent",2],
+    [1970.40,"1969&ndash;70 bear-market low","May 1970","shock","crash",2],
+    [1973.80,"Oil embargo &amp; 1973&ndash;74 bear","Oct 1973","shock","oil",1],
+    [1979.60,"Volcker tightening begins","Aug 1979","policy","percent",2],
+    [1980.20,"Inflation peaks near 14%","Mar 1980","shock","tag",1],
+    [1982.60,"Secular bull market begins","Aug 1982","milestone","rally",1],
+    [1987.80,"Black Monday","Oct 19, 1987","shock","crash",1],
+    [1990.58,"Gulf War &amp; recession","Aug 1990","shock","oil",1],
+    [1994.15,"Fed shock &amp; bond rout","Feb 1994","shock","percent",1],
+    [1997.90,"Asian financial crisis","1997","shock","globe",2],
+    [1998.71,"LTCM &amp; Russia default","Sep 1998","shock","warning",2],
+    [2000.23,"Dot-com peak","Mar 2000","milestone","monitor",1],
+    [2001.70,"9/11 attacks","Sep 2001","shock","tower",1],
+    [2002.77,"Bear-market bottom","Oct 2002","milestone","rally",2],
+    [2003.22,"Iraq war begins","Mar 2003","milestone","flag",2],
+    [2007.77,"Market peak / GFC begins","Oct 2007","shock","house",2],
+    [2008.71,"Lehman bankruptcy","Sep 15, 2008","shock","bank",1],
+    [2009.19,"Market bottom","Mar 9, 2009","milestone","rally",1],
+    [2010.36,"Flash Crash","May 6, 2010","shock","bolt",3],
+    [2011.60,"U.S. downgrade &amp; euro crisis","Aug 2011","shock","warning",1],
+    [2013.38,"Taper tantrum","May 2013","shock","percent",2],
+    [2014.55,"Oil-price crash begins","Jun 2014","shock","oil",3],
+    [2015.66,"China devaluation","Aug 2015","shock","globe",2],
+    [2016.06,"Feb 2016 growth scare","Feb 2016","shock","crash",3],
+    [2016.48,"Brexit vote","Jun 2016","shock","ballot",2],
+    [2018.10,"Volmageddon","Feb 2018","shock","bolt",3],
+    [2018.96,"Q4 sell-off &amp; trade war","Dec 2018","shock","ship",1],
+    [2019.55,"Fed pivot to rate cuts","Jul 2019","policy","percent",3],
+    [2020.19,"COVID-19 pandemic","Mar 2020","shock","virus",1],
+    [2021.05,"Meme-stock squeeze","Jan 2021","milestone","rally",3],
+    [2022.30,"Fed hikes; inflation peaks 9.1%","2022","policy","rateup",1],
+    [2022.78,"UK gilt / LDI crisis","Sep 2022","shock","warning",3],
+    [2023.19,"SVB collapse","Mar 2023","shock","bank",2],
+    [2023.60,"Fitch cuts U.S. rating","Aug 2023","shock","star",3],
+    [2024.60,"Yen carry-trade unwind","Aug 2024","shock","yen",2],
+    [2025.08,"AI / DeepSeek sell-off","Jan 2025","shock","monitor",3],
+    [2025.25,"Reciprocal tariffs","Apr 2025","policy","stamp",1]
+  ];
+
+  var ICONS={
+    crash:'<polyline points="3,6 10,13 14,9 21,16"/><polyline points="21,10 21,16 15,16"/>',
+    rally:'<polyline points="3,18 10,11 14,15 21,8"/><polyline points="21,14 21,8 15,8"/>',
+    percent:'<circle cx="8" cy="8" r="2.4"/><circle cx="16" cy="16" r="2.4"/><line x1="18" y1="6" x2="6" y2="18"/>',
+    globe:'<circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="4" ry="9"/><line x1="3" y1="12" x2="21" y2="12"/>',
+    warning:'<path d="M12 3 L22 20 H2 Z"/><line x1="12" y1="9" x2="12" y2="14"/><circle cx="12" cy="17" r="0.6"/>',
+    monitor:'<rect x="3" y="4" width="18" height="12" rx="1"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="16" x2="12" y2="20"/>',
+    tower:'<rect x="7" y="3" width="10" height="18"/><line x1="10" y1="7" x2="10" y2="7.4"/><line x1="14" y1="7" x2="14" y2="7.4"/><line x1="10" y1="11" x2="10" y2="11.4"/><line x1="14" y1="11" x2="14" y2="11.4"/><line x1="10" y1="15" x2="10" y2="15.4"/><line x1="14" y1="15" x2="14" y2="15.4"/>',
+    flag:'<line x1="6" y1="3" x2="6" y2="21"/><path d="M6 4 H18 L15 8 L18 12 H6 Z"/>',
+    house:'<path d="M4 11 L12 4 L20 11"/><path d="M6 11 V20 H18 V11"/>',
+    bank:'<path d="M3 9 L12 4 L21 9"/><line x1="4" y1="20" x2="20" y2="20"/><line x1="6" y1="9" x2="6" y2="18"/><line x1="10" y1="9" x2="10" y2="18"/><line x1="14" y1="9" x2="14" y2="18"/><line x1="18" y1="9" x2="18" y2="18"/>',
+    bolt:'<polygon points="13,2 4,14 11,14 10,22 20,10 13,10"/>',
+    star:'<polygon points="12,3 14.5,9 21,9.5 16,14 17.5,20.5 12,17 6.5,20.5 8,14 3,9.5 9.5,9"/>',
+    ballot:'<rect x="4" y="4" width="16" height="16" rx="1"/><polyline points="8,12 11,15 16,9"/>',
+    ship:'<path d="M4 14 H20 L18 20 H6 Z"/><line x1="12" y1="6" x2="12" y2="14"/><line x1="12" y1="6" x2="18" y2="10"/>',
+    virus:'<circle cx="12" cy="12" r="6"/><line x1="12" y1="6" x2="12" y2="2"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="6" y1="12" x2="2" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="7.8" y1="7.8" x2="5" y2="5"/><line x1="16.2" y1="16.2" x2="19" y2="19"/><line x1="16.2" y1="7.8" x2="19" y2="5"/><line x1="7.8" y1="16.2" x2="5" y2="19"/>',
+    rateup:'<rect x="4" y="15" width="4" height="5"/><rect x="10" y="11" width="4" height="9"/><rect x="16" y="6" width="4" height="14"/><polyline points="16,4 20,4 20,8"/>',
+    tag:'<path d="M4 4 H12 L20 12 L12 20 L4 12 Z"/><circle cx="8" cy="8" r="1.6"/>',
+    yen:'<circle cx="12" cy="12" r="9"/><polyline points="8,7 12,12 16,7"/><line x1="12" y1="12" x2="12" y2="17"/><line x1="8.5" y1="13" x2="15.5" y2="13"/><line x1="8.5" y1="15.5" x2="15.5" y2="15.5"/>',
+    stamp:'<circle cx="12" cy="10" r="6"/><polygon points="12,6 13,9 16,9 13.5,11 14.5,14 12,12 9.5,14 10.5,11 8,9 11,9"/><line x1="5" y1="20" x2="19" y2="20"/>',
+    oil:'<path d="M12 3 C7 10 5 13 5 16 a7 7 0 0 0 14 0 C19 13 17 10 12 3 Z"/>'
+  };
+  function iconSVG(name,color,cx,cy){
+    var s=20/24;
+    return '<g transform="translate('+(cx-10)+','+(cy-10)+') scale('+s.toFixed(4)+')" fill="none" stroke="'+color
+      +'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+(ICONS[name]||ICONS.warning)+'</g>';
+  }
+
+  /* ============ SERIES (built once) ============================ */
+  function rnd(s){var x=Math.sin(s*127.1+311.7)*43758.5453;return x-Math.floor(x);}
+  function interpA(a,t){
+    if(t<=a[0][0])return a[0][1];
+    for(var i=1;i<a.length;i++){if(t<=a[i][0]){var f=(t-a[i-1][0])/(a[i][0]-a[i-1][0]);
+      return Math.exp(Math.log(a[i-1][1])+(Math.log(a[i][1])-Math.log(a[i-1][1]))*f);}}
+    return a[a.length-1][1];
+  }
+  function retFrac(tbl,t0,t1){var v=1,y=Math.floor(t0);
+    while(y<=Math.floor(t1-1e-9)){var f=Math.min(t1,y+1)-Math.max(t0,y);v*=Math.pow(1+(tbl[y]||0)/100,f);y++;}return v;}
+
+  var times=[START];
+  for(var yy=1958;yy<=2026;yy++){var mm=(yy===2026)?8:11;for(var m=0;m<=mm;m++)times.push(yy+m/12);}
+  var sp0=spAnchors[0][1], EQ=[],BO=[],CA=[],bv=BASE,cv=BASE,pr=START;
+  times.forEach(function(t,i){
+    EQ.push(BASE*(interpA(spAnchors,t)/sp0)*(i?1+(rnd(i)-0.5)*0.010:1));
+    if(i){bv*=retFrac(bondRet,pr,t);cv*=retFrac(cashRet,pr,t);}
+    BO.push(bv);CA.push(cv);pr=t;
+  });
+  EQ[EQ.length-1]=BASE*(spAnchors[spAnchors.length-1][1]/sp0);
+
+  function idxAt(t){ // nearest sample index for a decimal year
+    var lo=0,hi=times.length-1;
+    while(lo<hi){var m=(lo+hi)>>1; if(times[m]<t)lo=m+1; else hi=m;}
+    if(lo>0 && Math.abs(times[lo-1]-t)<Math.abs(times[lo]-t))lo--;
+    return lo;
+  }
+  function valAt(arr,t){var i=idxAt(t);return arr[i];}
+
+  function fmtUSD(v){
+    if(v>=1e6) return "$"+(v/1e6).toFixed(2)+"M";
+    if(v>=1e3) return "$"+Math.round(v).toLocaleString("en-US");
+    return "$"+Math.round(v);
+  }
+  function fmtAxis(v){
+    if(v>=1e6) return "$"+(v/1e6).toFixed(v>=1e7?0:1).replace(/\.0$/,'')+"M";
+    if(v>=1e3) return "$"+Math.round(v/1e3)+"k";
+    return "$"+Math.round(v);
+  }
+  function fmtPct(m){
+    var p=(m-1)*100, s=p>=-0.05?"+":"−"; p=Math.abs(p);
+    var t = p>=1000 ? Math.round(p/100)*100 : p>=100 ? Math.round(p) : p>=10 ? Math.round(p) : p.toFixed(1);
+    return s+(t>=1000?(t/1000)+"k":t)+"%";
+  }
+  function cagr(v0,v1,yrs){return (Math.pow(v1/v0,1/yrs)-1)*100;}
+  function dispG(v){return state.pct?fmtPct(v/BASE):fmtUSD(v);}
+  var MONTHS=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  function fmtDate(t){var y=Math.floor(t+1e-6);var m=Math.round((t-y)*12);if(m>11){m=0;y++;}return MONTHS[m]+" "+y;}
+
+  /* ============ STAT TILES ==================================== */
+  var eqEnd=EQ[EQ.length-1],boEnd=BO[BO.length-1],caEnd=CA[CA.length-1];
+  document.getElementById("stats").innerHTML=[
+    {c:"eq",k:"U.S. stocks (S&P 500)",v:fmtUSD(eqEnd),n:cagr(BASE,eqEnd,END-START).toFixed(1)+"% annualized &middot; price return"},
+    {c:"bond",k:"U.S. bonds (IG / Agg)",v:fmtUSD(boEnd),n:cagr(BASE,boEnd,END-START).toFixed(1)+"% annualized &middot; total return"},
+    {c:"cash",k:"Cash (T-bills / savings)",v:fmtUSD(caEnd),n:cagr(BASE,caEnd,END-START).toFixed(1)+"% annualized &middot; total return"}
+  ].map(function(s){return '<div class="stat '+s.c+'"><div class="k">'+s.k+'</div><div class="v">'+s.v+'</div><div class="n">'+s.n+'</div></div>';}).join("");
+
+  /* ============ CHART ======================================== */
+  var svg=document.getElementById("chart"), tip=document.getElementById("tip");
+  var W=1760,H=780, mL=82,mR=196,mT=44,mB=48;
+  var pL=mL,pR=W-mR,pT=mT,pB=H-mB;
+  var toneCol={shock:"var(--shock)",policy:"var(--policy)",milestone:"var(--milestone)"};
+
+  var FRAMES=[
+    {k:"Max",yrs:END-START},{k:"40Y",yrs:40},{k:"25Y",yrs:25},
+    {k:"15Y",yrs:15},{k:"10Y",yrs:10},{k:"5Y",yrs:5}
+  ];
+  var state={fi:0,rebase:false,pct:false};
+
+  var cbox=document.getElementById("controls");
+  function mkBtn(txt,title){var b=document.createElement("button");b.className="tf-btn";b.type="button";
+    b.textContent=txt;if(title)b.title=title;b.setAttribute("aria-pressed","false");cbox.appendChild(b);return b;}
+
+  // time-frame buttons
+  var frButtons=FRAMES.map(function(f,i){
+    var b=mkBtn(f.k);
+    if(i===0)b.setAttribute("aria-pressed","true");
+    b.addEventListener("click",function(){state.fi=i;
+      frButtons.forEach(function(x,j){x.setAttribute("aria-pressed",j===i?"true":"false");});
+      render();});
+    return b;
+  });
+
+  var s1=document.createElement("span");s1.className="lbl";s1.style.marginLeft="12px";s1.textContent="Y-axis";cbox.appendChild(s1);
+  var bDollar=mkBtn("$ value","Dollar value of the investment"),
+      bPct=mkBtn("% return","Cumulative % return since the left edge of the visible window");
+  bDollar.setAttribute("aria-pressed","true");
+  function setUnit(pct){
+    state.pct=pct; if(pct)state.rebase=true;
+    bDollar.setAttribute("aria-pressed",pct?"false":"true");
+    bPct.setAttribute("aria-pressed",pct?"true":"false");
+    bWin.disabled=pct; b1957.disabled=pct;
+    if(pct){ setFrom(true); } render();
+  }
+  bDollar.addEventListener("click",function(){setUnit(false);});
+  bPct.addEventListener("click",function(){setUnit(true);});
+
+  var s2=document.createElement("span");s2.className="lbl";s2.style.marginLeft="12px";s2.textContent="From";cbox.appendChild(s2);
+  var b1957=mkBtn("1957","Grow from the original $10,000 in 1957"),
+      bWin=mkBtn("window start","Restart every line at $10,000 at the left edge, to compare growth within the chosen window");
+  b1957.setAttribute("aria-pressed","true");
+  function setFrom(reb){
+    state.rebase=reb;
+    b1957.setAttribute("aria-pressed",reb?"false":"true");
+    bWin.setAttribute("aria-pressed",reb?"true":"false");
+  }
+  b1957.addEventListener("click",function(){ if(state.pct)return; setFrom(false); render();});
+  bWin.addEventListener("click",function(){ if(state.pct)return; setFrom(true); render();});
+
+  var curX,curY,curDomain,curSc,curI0; // closures updated per render, used by hover
+
+  function niceLogBounds(lo,hi){
+    var steps=[1,2,3,5,10];
+    function floorNice(x){var d=Math.pow(10,Math.floor(Math.log(x)/Math.LN10));var r=x/d;var s=1;
+      for(var i=steps.length-1;i>=0;i--){if(steps[i]<=r+1e-9){s=steps[i];break;}}return s*d;}
+    function ceilNice(x){var d=Math.pow(10,Math.floor(Math.log(x)/Math.LN10));var r=x/d;var s=10;
+      for(var i=0;i<steps.length;i++){if(steps[i]>=r-1e-9){s=steps[i];break;}}return s*d;}
+    return [floorNice(lo/1.06), ceilNice(hi*1.10)];
+  }
+  function logTicks(lo,hi){
+    var t=[],e0=Math.floor(Math.log(lo)/Math.LN10),e1=Math.ceil(Math.log(hi)/Math.LN10);
+    for(var e=e0;e<=e1;e++){[1,3].forEach(function(m){var v=m*Math.pow(10,e);
+      if(v>=lo*0.999&&v<=hi*1.001)t.push(v);});}
+    return t;
+  }
+
+  function render(){
+    var f=FRAMES[state.fi];
+    var s0=Math.max(START, END-f.yrs);
+    var i0=idxAt(s0), i1=times.length-1;
+    curDomain=[times[i0],END];
+
+    var sc=state.rebase?[BASE/EQ[i0],BASE/BO[i0],BASE/CA[i0]]:[1,1,1];
+    curSc=sc; curI0=i0;
+    var SER=[[EQ,sc[0]],[BO,sc[1]],[CA,sc[2]]];
+    function sv(k,i){return SER[k][0][i]*SER[k][1];}   // scaled series value
+
+    // y-fit across visible portion of all three series
+    var lo=Infinity,hi=-Infinity;
+    for(var i=i0;i<=i1;i++){
+      for(var k=0;k<3;k++){var q=sv(k,i); if(q<lo)lo=q; if(q>hi)hi=q;}
+    }
+    var yb=niceLogBounds(lo,hi), yLo=yb[0], yHi=yb[1];
+    var lgLo=Math.log(yLo), lgHi=Math.log(yHi);
+
+    var X=function(t){return pL+(t-curDomain[0])/(curDomain[1]-curDomain[0])*(pR-pL);};
+    var Y=function(v){return pB-(Math.log(v)-lgLo)/(lgHi-lgLo)*(pB-pT);};
+    curX=X;curY=Y;
+    function disp(v){return state.pct?fmtPct(v/BASE):fmtUSD(v);}
+
+    function pathOf(k){var d="";for(var i=i0;i<=i1;i++){d+=(i===i0?"M":"L")+X(times[i]).toFixed(2)+" "+Y(sv(k,i)).toFixed(2);}return d;}
+    function eqAnchor(t){var i=idxAt(t);return sv(0,i);}
+
+    var S=[];
+    S.push('<defs><linearGradient id="eqfill" x1="0" y1="0" x2="0" y2="1">'
+      +'<stop offset="0" stop-color="var(--eq-fill)" stop-opacity="0.15"/>'
+      +'<stop offset="1" stop-color="var(--eq-fill)" stop-opacity="0.02"/></linearGradient></defs>');
+
+    // y grid
+    var ticks, minorFrom;
+    if(state.pct){
+      minorFrom=null;
+      var cand=[0.5,0.7,0.8,0.9,1,1.1,1.2,1.3,1.5,1.7,2,2.5,3,4,5,7,10,15,20,30,50,70,100,200,300,500];
+      ticks=cand.map(function(m){return BASE*m;}).filter(function(v){return v>=yLo*0.999&&v<=yHi*1.001;});
+      if(ticks.length>9) ticks=ticks.filter(function(_,ix){return ix%2===0;});
+    } else { ticks=logTicks(yLo,yHi); minorFrom=2; }
+    ticks.forEach(function(g){
+      var y=Y(g); if(y<pT-1||y>pB+1)return;
+      var mant=g/Math.pow(10,Math.floor(Math.log(g)/Math.LN10));
+      var minor = state.pct ? (Math.abs(g/BASE-Math.round(g/BASE))>0.01) : (mant>=2);
+      S.push('<line class="gridline'+(minor?' minor':'')+'" x1="'+pL+'" y1="'+y.toFixed(1)+'" x2="'+pR+'" y2="'+y.toFixed(1)+'"/>');
+      S.push('<text class="ax" x="'+(pL-12)+'" y="'+(y+4).toFixed(1)+'" text-anchor="end">'+(state.pct?fmtPct(g/BASE):fmtAxis(g))+'</text>');
+    });
+
+    // x grid
+    var span=curDomain[1]-curDomain[0];
+    var step= span>42?10 : span>22?5 : span>12?2 : 1;
+    var startYr=Math.ceil(curDomain[0]/step)*step;
+    for(var yr=startYr; yr<=2026; yr+=step){
+      var x=X(yr); if(x<pL-1||x>pR+1)continue;
+      S.push('<line class="gridline" x1="'+x.toFixed(1)+'" y1="'+pT+'" x2="'+x.toFixed(1)+'" y2="'+pB+'"/>');
+      if(Math.abs(yr-curDomain[0])>step*0.55 && Math.abs(yr-2026)>step*0.55)
+        S.push('<text class="ax-strong" x="'+x.toFixed(1)+'" y="'+(pB+25)+'" text-anchor="middle">'+yr+'</text>');
+    }
+    S.push('<text class="ax-strong" x="'+X(curDomain[0]).toFixed(1)+'" y="'+(pB+25)+'" text-anchor="middle">'+(Math.round(curDomain[0]*10)/10===Math.round(START*10)/10?"1957":Math.ceil(curDomain[0])) +'</text>');
+    S.push('<text class="ax-strong" x="'+X(END).toFixed(1)+'" y="'+(pB+25)+'" text-anchor="middle">2026</text>');
+    S.push('<line class="baseline" x1="'+pL+'" y1="'+pB+'" x2="'+pR+'" y2="'+pB+'"/>');
+
+    // area + lines
+    S.push('<path d="'+pathOf(0)+' L'+X(END).toFixed(2)+' '+pB+' L'+X(curDomain[0]).toFixed(2)+' '+pB+' Z" fill="url(#eqfill)"/>');
+    S.push('<path d="'+pathOf(2)+'" fill="none" stroke="var(--cash)" stroke-width="2" stroke-linejoin="round"/>');
+    S.push('<path d="'+pathOf(1)+'" fill="none" stroke="var(--bond)" stroke-width="2" stroke-linejoin="round"/>');
+    S.push('<path d="'+pathOf(0)+'" fill="none" stroke="var(--eq)" stroke-width="2.4" stroke-linejoin="round"/>');
+
+    // start + end markers
+    S.push('<circle cx="'+X(curDomain[0]).toFixed(1)+'" cy="'+Y(sv(0,i0)).toFixed(1)+'" r="3.6" fill="var(--ink)"/>');
+    if(state.rebase) S.push('<text class="series-end" x="'+(X(curDomain[0])+8)+'" y="'+(Y(sv(0,i0))+20)+'" fill="var(--ink-soft)">'+(state.pct?"+0%":"$10,000")+'</text>');
+    [["var(--eq)",0],["var(--bond)",1],["var(--cash)",2]].forEach(function(p){
+      var ey=Y(sv(p[1],i1));
+      S.push('<circle cx="'+X(END).toFixed(1)+'" cy="'+ey.toFixed(1)+'" r="4.5" fill="'+p[0]+'"/>');
+      S.push('<text class="series-end" x="'+(X(END)+12)+'" y="'+(ey+4).toFixed(1)+'" fill="'+p[0]+'">'+disp(sv(p[1],i1))+'</text>');
+    });
+
+    // legend
+    var lg=[["U.S. stocks &mdash; S&amp;P 500 price","var(--eq)"],["U.S. bonds &mdash; IG / Bloomberg U.S. Agg","var(--bond)"],["Cash &mdash; 30-day T-bills","var(--cash)"]];
+    var lx=pL,ly=22;
+    lg.forEach(function(it){
+      S.push('<line x1="'+lx+'" y1="'+ly+'" x2="'+(lx+22)+'" y2="'+ly+'" stroke="'+it[1]+'" stroke-width="3"/>');
+      S.push('<text class="ax-strong" x="'+(lx+30)+'" y="'+(ly+4)+'">'+it[0]+'</text>');
+      lx+=30+it[0].replace(/&[a-z]+;/g,'x').length*6.7+30;
+    });
+
+    // ---- events: level-of-detail by window size ----
+    var maxTier = span>45?1 : span>18?2 : 3;
+    var vis=events.filter(function(e){return e[5]<=maxTier && e[0]>=curDomain[0]-0.02 && e[0]<=END+0.02;});
+    var placed=[], layer=[];
+    function ov(a,b){return !(a.x1<b.x0||a.x0>b.x1||a.y1<b.y0||a.y0>b.y1);}
+    vis.sort(function(a,b){return a[0]-b[0];}).forEach(function(e){
+      var ex=X(e[0]), ay=Y(eqAnchor(e[0]));
+      var tw=Math.max(e[1].replace(/&[a-z]+;/g,'xx').length,e[2].length)*6.05;
+      var left = ex+26+tw > pR-6;
+      var tx = left ? ex-15-tw : ex+15;
+      var b0=Math.min(ex-13,tx-5), b1=Math.max(ex+13,tx+tw+5);
+      var iy=ay-42;
+      for(var k=0;k<90;k++){var bb={x0:b0-3,x1:b1+3,y0:iy-13,y1:iy+15};
+        if(!placed.some(function(p){return ov(bb,p);}))break; iy-=25;}
+      iy=Math.max(iy,pT+12);
+      placed.push({x0:b0-3,x1:b1+3,y0:iy-13,y1:iy+15});
+      var col=toneCol[e[3]];
+      layer.push('<line x1="'+ex.toFixed(1)+'" y1="'+(iy+12).toFixed(1)+'" x2="'+ex.toFixed(1)+'" y2="'+(ay-4).toFixed(1)+'" stroke="'+col+'" stroke-width="1" stroke-opacity="0.30"/>');
+      layer.push('<circle cx="'+ex.toFixed(1)+'" cy="'+ay.toFixed(1)+'" r="3.3" fill="'+col+'" stroke="var(--panel)" stroke-width="1.4"/>');
+      layer.push('<rect x="'+b0.toFixed(1)+'" y="'+(iy-14).toFixed(1)+'" width="'+(b1-b0).toFixed(1)+'" height="29" rx="4" fill="var(--halo)" fill-opacity="0.95"/>');
+      layer.push('<text class="evt-label" x="'+tx.toFixed(1)+'" y="'+(iy-1).toFixed(1)+'">'+e[1]+'</text>');
+      layer.push('<text class="evt-date" x="'+tx.toFixed(1)+'" y="'+(iy+12).toFixed(1)+'">'+e[2]+'</text>');
+      layer.push('<circle cx="'+ex.toFixed(1)+'" cy="'+iy.toFixed(1)+'" r="11" fill="var(--halo)"/>');
+      layer.push('<circle cx="'+ex.toFixed(1)+'" cy="'+iy.toFixed(1)+'" r="11" fill="'+col+'" fill-opacity="0.14" stroke="'+col+'" stroke-width="1.3"/>');
+      layer.push(iconSVG(e[4],col,ex,iy));
+    });
+    S.push(layer.join(""));
+    S.push('<g id="hover"></g>');
+    S.push('<rect id="hitbox" x="'+pL+'" y="'+pT+'" width="'+(pR-pL)+'" height="'+(pB-pT)+'" fill="transparent"/>');
+
+    svg.innerHTML=S.join("");
+
+    // sub line + event count note
+    var cnt=vis.length;
+    document.getElementById("sub").innerHTML = f.k==="Max"
+      ? "$10,000 invested when the S&amp;P 500 began in 1957, held through every crisis since"
+      : "Zoomed to the last "+f.k+" &mdash; "+cnt+" market events shown (more detail appears as you zoom in)";
+  }
+
+  /* ============ HOVER / CROSSHAIR ============================ */
+  var pt=svg.createSVGPoint();
+  function localX(evt){
+    pt.x=(evt.touches?evt.touches[0].clientX:evt.clientX);
+    pt.y=(evt.touches?evt.touches[0].clientY:evt.clientY);
+    var m=svg.getScreenCTM(); if(!m)return null;
+    return pt.matrixTransform(m.inverse()).x;
+  }
+  function moveHover(evt){
+    var x=localX(evt); if(x==null)return;
+    x=Math.max(pL,Math.min(pR,x));
+    var t=curDomain[0]+(x-pL)/(pR-pL)*(curDomain[1]-curDomain[0]);
+    var i=idxAt(t); if(i<curI0)i=curI0; var tx=curX(times[i]);
+    var g=svg.querySelector("#hover"); if(!g)return;
+    var rows=[[EQ,curSc[0],"var(--eq)"],[BO,curSc[1],"var(--bond)"],[CA,curSc[2],"var(--cash)"]];
+    var h='<line class="cross" x1="'+tx.toFixed(1)+'" y1="'+pT+'" x2="'+tx.toFixed(1)+'" y2="'+pB+'"/>';
+    rows.forEach(function(r){h+='<circle cx="'+tx.toFixed(1)+'" cy="'+curY(r[0][i]*r[1]).toFixed(1)+'" r="4.5" fill="'+r[2]+'" stroke="var(--panel)" stroke-width="1.5"/>';});
+    g.innerHTML=h;
+    tip.className="tip on";
+    tip.innerHTML='<div class="td">'+fmtDate(times[i])+(state.rebase?' &middot; since '+fmtDate(times[curI0]):'')+'</div>'
+      +'<div class="tr"><span><i class="dot" style="background:var(--eq)"></i>Stocks</span><b>'+dispG(EQ[i]*curSc[0])+'</b></div>'
+      +'<div class="tr"><span><i class="dot" style="background:var(--bond)"></i>Bonds</span><b>'+dispG(BO[i]*curSc[1])+'</b></div>'
+      +'<div class="tr"><span><i class="dot" style="background:var(--cash)"></i>Cash</span><b>'+dispG(CA[i]*curSc[2])+'</b></div>';
+    var fig=svg.parentNode;
+    var fw=fig.clientWidth, px=tx/W*fw;
+    var tw=tip.offsetWidth;
+    tip.style.left=Math.max(4,Math.min(fw-tw-4, px+16))+"px";
+    tip.style.top=Math.max(4, pT/H*fig.clientHeight)+"px";
+  }
+  function endHover(){var g=svg.querySelector("#hover"); if(g)g.innerHTML=""; tip.className="tip";}
+  svg.addEventListener("mousemove",moveHover);
+  svg.addEventListener("mouseleave",endHover);
+  svg.addEventListener("touchstart",moveHover,{passive:true});
+  svg.addEventListener("touchmove",moveHover,{passive:true});
+  svg.addEventListener("touchend",endHover);
+
+  var rt; window.addEventListener("resize",function(){clearTimeout(rt);rt=setTimeout(render,150);});
+  render();
+
+  /* ============ FOOTNOTE ==================================== */
+  document.getElementById("foot").innerHTML=
+    '<strong>How to read this.</strong> Illustrative growth of a single $10,000 investment made when the S&amp;P 500 launched (year-end 1957) and held through Sep 1, 2026, on a <strong>ratio (log) scale</strong>. '
+    +'Use the time-frame buttons to zoom; the y-axis rescales to the visible window and <strong>more market events appear the further you zoom in</strong> (major events always shown, secondary and minor events revealed in shorter windows). Hover or tap the chart for values on any date. '
+    +'Stocks are the S&amp;P 500 <strong>price index</strong> (39.99 &rarr; 7,631.47), price return only. Bonds and cash are <strong>total return</strong>, compounded year by year from published annual returns: bonds splice Ibbotson U.S. government bonds (1958&ndash;1975) into the Bloomberg U.S. Aggregate (1976&ndash;present); cash is 30-day U.S. Treasury bills. Because stocks exclude dividends while bonds and cash include income, the equity line understates stocks&rsquo; true lead. Past performance is not indicative of future results. '
+    +'<br>Sources: S&amp;P Dow Jones Indices; Bloomberg Index Services; Ibbotson / Morningstar SBBI; U.S. Treasury; Federal Reserve (FRED). Annual-return figures are approximate. Data verified Sep 2026.';
+})();
+</script>
+</body>
+</html>
