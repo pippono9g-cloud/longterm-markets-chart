@@ -761,12 +761,14 @@
     if(e.touches.length>=2){
       pinchInit(e);
     }else{
-      tch.mode=0; tch.x=e.touches[0].clientX; tch.y=e.touches[0].clientY; tch.dom0=state.dom.slice();
+      tch.mode=0; tch.x=e.touches[0].clientX; tch.y=e.touches[0].clientY;
       var now=Date.now();
       if(now-tch.lastTap<300){
         tch.mode=9;
         zoomAbout(clientToYear(e.touches[0].clientX)||((state.dom[0]+state.dom[1])/2), (state.dom[1]-state.dom[0])/2.2, state.dom.slice());
         syncFrButtons(); render();
+      } else {
+        moveHover(e);   // tap = show the value readout right away
       }
       tch.lastTap=now;
     }
@@ -787,16 +789,9 @@
       state.dom=[n0,n1]; scheduleRender(); return;
     }
     if(e.touches.length!==1) return;
-    var dx=e.touches[0].clientX-tch.x, dy=e.touches[0].clientY-tch.y;
-    if(tch.mode===0 && Math.abs(dx)+Math.abs(dy)>8) tch.mode = Math.abs(dx)>Math.abs(dy)*1.2 ? 2 : 1;
-    if(tch.mode===2){
-      e.preventDefault();
-      var rw=svg.getBoundingClientRect().width||W, sp=tch.dom0[1]-tch.dom0[0];
-      var dyr=-(dx/rw)*(W/(pR-pL))*sp;
-      var n0=tch.dom0[0]+dyr,n1=tch.dom0[1]+dyr;
-      if(n0<START){n1+=START-n0;n0=START;} if(n1>END){n0-=n1-END;n1=END;}
-      state.dom=[n0,n1]; endHover(); scheduleRender();
-    } else if(tch.mode===1){ moveHover(e); }
+    // one finger = scrub the value readout (two fingers do pan + zoom)
+    e.preventDefault();
+    moveHover(e);
   },{passive:false});
   svg.addEventListener("touchend",function(e){
     if(e.touches.length===0){ if(tch.mode!==2 && tch.mode!==3) endHover(); tch.mode=0; }
@@ -873,7 +868,7 @@
   /* ============ FOOTNOTE ==================================== */
   document.getElementById("foot").innerHTML=
     '<strong>How to read this.</strong> Illustrative growth of a single $10,000 investment made when the S&amp;P 500 launched (year-end 1957) and held through Sep 1, 2026, on a <strong>ratio (log) scale</strong>. '
-    +'Zoom with the time-frame buttons or the mouse wheel (about the cursor); pan by dragging (desktop) or a one-finger swipe; on a touch screen, pinch to zoom and double-tap to zoom in. The y-axis rescales to the visible window, and a roughly <strong>constant number of events stays on screen at every zoom level</strong> &mdash; drawn from a curated importance-ranked index of ~150 market events (at least one per year) (default '+DEFAULT_EVENT_COUNT+' on screen), most significant first, with finer detail filling in as you zoom into a period. Hover or tap the chart to read each asset&rsquo;s value on its own line. '
+    +'Zoom with the time-frame buttons or the mouse wheel (about the cursor); pan by dragging (desktop). On a touch screen: one finger reads the values, two fingers pan and pinch-zoom, double-tap zooms in. The y-axis rescales to the visible window, and a roughly <strong>constant number of events stays on screen at every zoom level</strong> &mdash; drawn from a curated importance-ranked index of ~150 market events (at least one per year) (default '+DEFAULT_EVENT_COUNT+' on screen), most significant first, with finer detail filling in as you zoom into a period. Hover or tap the chart to read each asset&rsquo;s value on its own line. '
     +'Stocks are the S&amp;P 500 <strong>monthly price</strong> (40.33 in Dec 1957 &rarr; 7,711 in Aug 2026), price return only. Cash is the 3-month U.S. Treasury-bill rate, compounded monthly. Bonds are the U.S. investment-grade aggregate: from Sep 2003 the <strong>actual monthly total return of the AGG ETF</strong>; before that, modelled from the 10-year Treasury yield and <strong>calibrated to the published annual return for each year</strong> (so 2008, 2013 and the &minus;13% of 2022 are the real figures). Because stocks exclude dividends while bonds and cash include income, the equity line understates stocks&rsquo; true lead. Past performance is not indicative of future results. '
     +'<br>Sources: S&amp;P Dow Jones Indices / R. Shiller (S&amp;P 500 monthly); FRED (TB3MS, GS10); iShares / Yahoo Finance (AGG total return); annual bond returns from Ibbotson / Morningstar. Monthly data through Aug 2026.';
 })();
