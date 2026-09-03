@@ -375,7 +375,7 @@
   var svg=document.getElementById("chart");
   var hit=svg.parentNode;          // .chart-scroll - full-area touch/pointer surface
   var scene=null;                  // <g> holding everything drawn; transformed live during a pinch
-  var W=1760,H=780, mL=82,mR=196,mT=44,mB=48;
+  var W=1760,H=780, mL=82,mR=96,mT=44,mB=48;
   var pL=mL,pR=W-mR,pT=mT,pB=H-mB;
   var toneCol={shock:"var(--shock)",policy:"var(--policy)",milestone:"var(--milestone)"};
 
@@ -513,8 +513,7 @@
     S.push('<rect x="0" y="0" width="'+W+'" height="'+H+'" fill="transparent"/>');
     S.push('<defs><linearGradient id="eqfill" x1="0" y1="0" x2="0" y2="1">'
       +'<stop offset="0" stop-color="var(--eq-fill)" stop-opacity="0.15"/>'
-      +'<stop offset="1" stop-color="var(--eq-fill)" stop-opacity="0.02"/></linearGradient>'
-      +'<clipPath id="plotclip"><rect x="'+pL+'" y="0" width="'+(pR-pL)+'" height="'+H+'"/></clipPath></defs>');
+      +'<stop offset="1" stop-color="var(--eq-fill)" stop-opacity="0.02"/></linearGradient></defs>');
 
     // y grid
     var ticks, minorFrom;
@@ -649,7 +648,10 @@
     });
     S.push(layer.join(""));
     }  // end if(!fast)
-    svg.innerHTML='<g id="yfixed">'+SY.join("")+'</g><g clip-path="url(#plotclip)"><g id="scene">'+S.join("")+'</g></g><g id="hover"></g>';
+    svg.innerHTML='<defs><clipPath id="plotclip"><rect x="'+pL+'" y="0" width="'+(pR-pL)+'" height="'+H+'"/></clipPath></defs>'
+      +'<g id="yfixed">'+SY.join("")+'</g>'
+      +'<g clip-path="url(#plotclip)"><g id="scene">'+S.join("")+'</g></g>'
+      +'<g id="hover"></g>';
     scene=svg.querySelector("#scene");
 
     syncYearInputs();
