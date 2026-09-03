@@ -255,7 +255,7 @@
 [1993.06,"SPY, the first U.S. ETF, begins trading","Jan 1993","milestone","star",4],
 [2017.97,"Tax Cuts and Jobs Act signed","Dec 2017","policy","stamp",4],
 [2024.03,"First U.S. spot-Bitcoin ETFs approved","Jan 2024","milestone","monitor",4],
-[2026.20,"2026: markets grind back to record highs","Mar 2026","milestone","rally",5],
+[2026.18,"U.S.-Israel strikes on Iran; oil spikes toward $120","Mar 2026","shock","oil",2],
 [1957.20,"Treaty of Rome: Europe's common market is founded","Mar 1957","policy","pact",5],
 [1960.70,"OPEC founded","Sep 1960","policy","oil",5],
 [1961.62,"Berlin Wall goes up","Aug 1961","policy","globe",5],
@@ -482,6 +482,11 @@
     state.dom=[d0,d1];
     var i0=idxAt(d0), i1=idxAt(d1);
     curDomain=[d0,d1];
+    // draw well beyond the visible window so a two-finger slide reveals real
+    // content (not white) before the next full re-render catches up
+    var pad=(d1-d0)*1.3;
+    var dd0=Math.max(START,d0-pad), dd1=Math.min(END,d1+pad);
+    var di0=idxAt(dd0), di1=idxAt(dd1);
 
     var sc=state.rebase?[BASE/EQ[i0],BASE/BO[i0],BASE/CA[i0]]:[1,1,1];
     curSc=sc; curI0=i0;
@@ -501,10 +506,10 @@
     curX=X;curY=Y;
     function disp(v){return state.pct?fmtPct(v/BASE):fmtUSD(v);}
 
-    function pathOf(k){var d="";for(var i=i0;i<=i1;i++){d+=(i===i0?"M":"L")+X(times[i]).toFixed(2)+" "+Y(sv(k,i)).toFixed(2);}return d;}
+    function pathOf(k){var d="";for(var i=di0;i<=di1;i++){d+=(i===di0?"M":"L")+X(times[i]).toFixed(2)+" "+Y(sv(k,i)).toFixed(2);}return d;}
     function eqAnchor(t){var i=idxAt(t);return sv(0,i);}
 
-    var S=[];
+    var S=[], SY=[];   // S = scene (transformed during a gesture) · SY = y-axis + legend (stays put)
     S.push('<rect x="0" y="0" width="'+W+'" height="'+H+'" fill="transparent"/>');
     S.push('<defs><linearGradient id="eqfill" x1="0" y1="0" x2="0" y2="1">'
       +'<stop offset="0" stop-color="var(--eq-fill)" stop-opacity="0.15"/>'
@@ -522,28 +527,27 @@
       var y=Y(g); if(y<pT-1||y>pB+1)return;
       var mant=g/Math.pow(10,Math.floor(Math.log(g)/Math.LN10));
       var minor = state.pct ? (Math.abs(g/BASE-Math.round(g/BASE))>0.01) : (mant>=2);
-      S.push('<line class="gridline'+(minor?' minor':'')+'" x1="'+pL+'" y1="'+y.toFixed(1)+'" x2="'+pR+'" y2="'+y.toFixed(1)+'"/>');
-      S.push('<text class="ax" x="'+(pL-12)+'" y="'+(y+4).toFixed(1)+'" text-anchor="end">'+(state.pct?fmtPct(g/BASE):fmtAxis(g))+'</text>');
+      SY.push('<line class="gridline'+(minor?' minor':'')+'" x1="'+pL+'" y1="'+y.toFixed(1)+'" x2="'+pR+'" y2="'+y.toFixed(1)+'"/>');
+      SY.push('<text class="ax" x="'+(pL-12)+'" y="'+(y+4).toFixed(1)+'" text-anchor="end">'+(state.pct?fmtPct(g/BASE):fmtAxis(g))+'</text>');
     });
 
-    // x grid
+    // x grid (drawn across the padded range so it slides in during a pan)
     var span=curDomain[1]-curDomain[0];
     var step= span>42?10 : span>22?5 : span>12?2 : 1;
-    var startYr=Math.ceil(curDomain[0]/step)*step, lastYr=Math.floor(curDomain[1]+1e-6);
-    for(var yr=startYr; yr<=lastYr; yr+=step){
-      var x=X(yr); if(x<pL-1||x>pR+1)continue;
+    for(var yr=Math.ceil(dd0/step)*step; yr<=Math.floor(dd1+1e-6); yr+=step){
+      var x=X(yr);
       S.push('<line class="gridline" x1="'+x.toFixed(1)+'" y1="'+pT+'" x2="'+x.toFixed(1)+'" y2="'+pB+'"/>');
       if(Math.abs(yr-curDomain[0])>step*0.55 && Math.abs(yr-curDomain[1])>step*0.55)
         S.push('<text class="ax-strong" x="'+x.toFixed(1)+'" y="'+(pB+25)+'" text-anchor="middle">'+yr+'</text>');
     }
     var lEdge = curDomain[0]<=START+0.05 ? "1957" : fmtDate(curDomain[0]);
     var rEdge = curDomain[1]>=END-0.05 ? "2026" : fmtDate(curDomain[1]);
-    S.push('<text class="ax-strong" x="'+pL+'" y="'+(pB+25)+'" text-anchor="middle">'+lEdge+'</text>');
-    S.push('<text class="ax-strong" x="'+pR+'" y="'+(pB+25)+'" text-anchor="middle">'+rEdge+'</text>');
-    S.push('<line class="baseline" x1="'+pL+'" y1="'+pB+'" x2="'+pR+'" y2="'+pB+'"/>');
+    SY.push('<text class="ax-strong" x="'+pL+'" y="'+(pB+25)+'" text-anchor="middle">'+lEdge+'</text>');
+    SY.push('<text class="ax-strong" x="'+pR+'" y="'+(pB+25)+'" text-anchor="middle">'+rEdge+'</text>');
+    SY.push('<line class="baseline" x1="'+pL+'" y1="'+pB+'" x2="'+pR+'" y2="'+pB+'"/>');
 
     // area + lines
-    S.push('<path d="'+pathOf(0)+' L'+X(times[i1]).toFixed(2)+' '+pB+' L'+X(times[i0]).toFixed(2)+' '+pB+' Z" fill="url(#eqfill)"/>');
+    S.push('<path d="'+pathOf(0)+' L'+X(times[di1]).toFixed(2)+' '+pB+' L'+X(times[di0]).toFixed(2)+' '+pB+' Z" fill="url(#eqfill)"/>');
     S.push('<path d="'+pathOf(2)+'" fill="none" stroke="var(--cash)" stroke-width="2" stroke-linejoin="round"/>');
     S.push('<path d="'+pathOf(1)+'" fill="none" stroke="var(--bond)" stroke-width="2" stroke-linejoin="round"/>');
     S.push('<path d="'+pathOf(0)+'" fill="none" stroke="var(--eq)" stroke-width="2.4" stroke-linejoin="round"/>');
@@ -561,19 +565,20 @@
     var lg=[["U.S. stocks &mdash; S&amp;P 500 monthly price","var(--eq)"],["U.S. bonds &mdash; iShares Core U.S. Aggregate Bond ETF (AGG)","var(--bond)"],["Cash &mdash; 3-month Treasury bills","var(--cash)"]];
     var lx=pL,ly=22;
     lg.forEach(function(it){
-      S.push('<line x1="'+lx+'" y1="'+ly+'" x2="'+(lx+22)+'" y2="'+ly+'" stroke="'+it[1]+'" stroke-width="3"/>');
-      S.push('<text class="ax-strong" x="'+(lx+30)+'" y="'+(ly+4)+'">'+it[0]+'</text>');
+      SY.push('<line x1="'+lx+'" y1="'+ly+'" x2="'+(lx+22)+'" y2="'+ly+'" stroke="'+it[1]+'" stroke-width="3"/>');
+      SY.push('<text class="ax-strong" x="'+(lx+30)+'" y="'+(ly+4)+'">'+it[0]+'</text>');
       lx+=30+it[0].replace(/&[a-z]+;/g,'x').length*6.7+30;
     });
 
     // ---- events: cap how many of the IN-WINDOW events are drawn ----
     var vis=[];
     if(!fast){
-    var TARGET = Math.min(
+    var padMul=(dd1-dd0)/(d1-d0);   // draw proportionally more events across the padded range
+    var TARGET = Math.round(Math.min(
       (span > 55 ? DEFAULT_EVENT_COUNT - 2 : DEFAULT_EVENT_COUNT),
       Math.max(8, Math.floor((pR - pL) / 118))
-    );
-    var inWin = events.filter(function(e){return e[0]>=curDomain[0]-0.02 && e[0]<=curDomain[1]+0.02;})
+    ) * padMul);
+    var inWin = events.filter(function(e){return e[0]>=dd0-0.02 && e[0]<=dd1+0.02;})
                       .sort(function(a,b){return a[0]-b[0];});
     var vis;
     if(inWin.length<=TARGET){ vis=inWin.slice(); }
@@ -597,9 +602,9 @@
     // fill conspicuous empty stretches (so no era of the visible window looks blank)
     if(inWin.length>vis.length){
       var rest=inWin.filter(function(e){return vis.indexOf(e)<0;});
-      for(var pass=0;pass<3;pass++){
-        var edges=[curDomain[0]].concat(vis.map(function(e){return e[0];})),g;
-        edges.push(curDomain[1]);
+      for(var pass=0;pass<4;pass++){
+        var edges=[dd0].concat(vis.map(function(e){return e[0];})),g;
+        edges.push(dd1);
         var gi=-1,gmax=0;
         for(g=0;g<edges.length-1;g++){var w=edges[g+1]-edges[g]; if(w>gmax){gmax=w;gi=g;}}
         if(span < 4 || gmax < span/5.5) break;   // don't back-fill tight zooms
@@ -639,8 +644,8 @@
     });
     S.push(layer.join(""));
     }  // end if(!fast)
-    svg.innerHTML='<g id="scene">'+S.join("")+'</g><g id="hover"></g>';
-    scene=svg.firstElementChild;
+    svg.innerHTML='<g id="yfixed">'+SY.join("")+'</g><g id="scene">'+S.join("")+'</g><g id="hover"></g>';
+    scene=svg.querySelector("#scene");
 
     syncYearInputs();
   }
@@ -759,6 +764,20 @@
     gest=null; tch.mode=0;
     syncFrButtons(); render(false);
   }
+  // mid-gesture: when a slide nears the edge of the drawn overscan, silently bake the
+  // position, redraw a fresh (fast) overscan around it, and keep the gesture going -
+  // so a long two-finger pan stays continuous with no white edge.
+  function rebaseGest(e){
+    var oldSpan=gest.dom0[1]-gest.dom0[0];
+    var sp=Math.max(MINSPAN, Math.min(END-START, oldSpan/gest.s));
+    var xAtPL=(pL - gest.tx - gest.ox)/gest.s + gest.ox;
+    var n0=gest.dom0[0] + (xAtPL - pL)/(pR-pL)*oldSpan;
+    n0=Math.max(START, Math.min(END-sp, n0));
+    state.dom=[n0, n0+sp];
+    scene.removeAttribute("transform");
+    render(true);              // fast redraw, re-centred overscan
+    pinchInit(e);              // restart the transform math from the fingers' current spot
+  }
   hit.addEventListener("touchstart",function(e){
     if(e.touches.length>=2){
       e.preventDefault();
@@ -783,6 +802,7 @@
       e.preventDefault();
       if(tch.mode!==3 || !gest) pinchInit(e);   // works even if 1 finger was already resting
       applyGest(e);                             // pure GPU transform - no re-draw
+      if(Math.abs(gest.tx) > 0.6*(pR-pL)*1.3 && Math.abs(gest.s-1) < 0.15) rebaseGest(e);
       return;
     }
     if(e.touches.length!==1 || gest) return;
