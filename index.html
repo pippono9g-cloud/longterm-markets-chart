@@ -38,6 +38,11 @@
   .tf-btn.switch b,.tf-btn.switch span{padding:3px 11px;border-radius:999px;font-size:12.5px;line-height:1.35;font-weight:700}
   .tf-btn.switch b{background:var(--ink);color:#fff}
   .tf-btn.switch span{color:var(--ink-mute);font-weight:600}
+  .tf-btn.grp{font-size:11px;font-weight:700;padding:4px 10px;border-width:1.5px;border-color:var(--hair);color:var(--ink-mute)}
+  .tf-btn.grp[aria-pressed="true"]{background:var(--soft);border-color:var(--ink);color:var(--ink)}
+  .tf-btn.grp[aria-pressed="false"]{opacity:.5;text-decoration:line-through;text-decoration-thickness:1px}
+  .tf-btn.grp-all{font-size:11px;padding:4px 10px;border-color:var(--scb);color:var(--scb)}
+  .tf-btn.grp-all:hover{background:var(--scb-l)}
   .yr-in{font:inherit;font-size:12.5px;font-weight:700;width:56px;text-align:center;color:var(--ink);
     border:1.5px solid var(--ink);border-radius:8px;padding:4px 6px;background:#fff}
   .yr-in::placeholder{color:var(--ink-mute);font-weight:400}
@@ -379,11 +384,26 @@
   var pL=mL,pR=W-mR,pT=mT,pB=H-mB;
   var toneCol={shock:"var(--shock)",policy:"var(--policy)",milestone:"var(--milestone)"};
 
+  // ---- event categories (grouped by icon) — drives the "Events" filter chips ----
+  var GROUPS=[
+    {id:"market", label:"Crashes &amp; rallies",         icons:["crash","rally","bolt"]},
+    {id:"rates",  label:"Fed &amp; rates",               icons:["percent","rateup"]},
+    {id:"infl",   label:"Inflation, oil &amp; currency", icons:["tag","oil","dollar","yen"]},
+    {id:"credit", label:"Banking &amp; credit crises",   icons:["bank","house"]},
+    {id:"tech",   label:"Tech &amp; market structure",   icons:["monitor","star"]},
+    {id:"world",  label:"Geopolitics &amp; global",      icons:["globe","warning","tower","ship","flag","virus","ballot"]},
+    {id:"policy", label:"Law, trade &amp; institutions", icons:["stamp","pact","doc"]}
+  ];
+  var ICON_CAT={};
+  GROUPS.forEach(function(g){g.icons.forEach(function(ic){ICON_CAT[ic]=g.id;});});
+  function catOf(e){return ICON_CAT[e[4]]||"world";}
+
   var FRAMES=[
     {k:"Max",yrs:END-START},{k:"40Y",yrs:40},{k:"25Y",yrs:25},
     {k:"15Y",yrs:15},{k:"10Y",yrs:10},{k:"5Y",yrs:5}
   ];
-  var state={fi:0,rebase:true,pct:true,dom:[START,END]};   // default: % return, rebased to window
+  var state={fi:0,rebase:true,pct:true,dom:[START,END],gset:{}};   // default: % return, rebased to window
+  GROUPS.forEach(function(g){state.gset[g.id]=true;});            // every event category on by default
   var MINSPAN=1.0;   // tightest zoom = a single year
 
   var cbox=document.getElementById("controls");
@@ -455,6 +475,31 @@
     paintUnit(); render();
   });
   paintUnit();
+
+  // ---- "Events" category filter — toggle chips to hunt for one kind of event ----
+  var s2=document.createElement("span");s2.className="lbl";s2.style.marginLeft="12px";s2.textContent="Events";cbox.appendChild(s2);
+  var grpBtns=GROUPS.map(function(g){
+    var b=mkBtn("");b.classList.add("grp");
+    b.innerHTML=g.label;b.title="Show / hide "+g.label.replace(/&amp;/g,"&")+" events";
+    b.setAttribute("aria-pressed","true");
+    b.addEventListener("click",function(){
+      state.gset[g.id]=!state.gset[g.id];
+      if(GROUPS.every(function(x){return !state.gset[x.id];}))   // never leave it empty
+        GROUPS.forEach(function(x){state.gset[x.id]=true;});
+      syncGrpBtns(); render();
+    });
+    return b;
+  });
+  var grpAll=mkBtn("Reset","Show every event category again");
+  grpAll.classList.add("grp-all");
+  grpAll.addEventListener("click",function(){
+    GROUPS.forEach(function(x){state.gset[x.id]=true;}); syncGrpBtns(); render();
+  });
+  function syncGrpBtns(){
+    grpBtns.forEach(function(b,i){ b.setAttribute("aria-pressed", state.gset[GROUPS[i].id]?"true":"false"); });
+    grpAll.hidden = GROUPS.every(function(x){return state.gset[x.id];});
+  }
+  syncGrpBtns();
 
   var curX,curY,curDomain,curSc,curI0; // closures updated per render, used by hover
 
@@ -579,7 +624,7 @@
       (span > 55 ? DEFAULT_EVENT_COUNT - 2 : DEFAULT_EVENT_COUNT),
       Math.max(8, Math.floor((pR - pL) / 118))
     ) * padMul);
-    var inWin = events.filter(function(e){return e[0]>=dd0-0.02 && e[0]<=dd1+0.02;})
+    var inWin = events.filter(function(e){return e[0]>=dd0-0.02 && e[0]<=dd1+0.02 && state.gset[catOf(e)];})
                       .sort(function(a,b){return a[0]-b[0];});
     var vis;
     if(inWin.length<=TARGET){ vis=inWin.slice(); }
@@ -901,7 +946,7 @@
   /* ============ FOOTNOTE ==================================== */
   document.getElementById("foot").innerHTML=
     '<strong>How to read this.</strong> Illustrative growth of a single $10,000 invested at the left edge of the window you are viewing (so the three lines always start together), drawn on a <strong>ratio (log) scale</strong>. Toggle the y-axis between that dollar value and cumulative % return. '
-    +'Zoom with the time-frame buttons or the mouse wheel (about the cursor); pan by dragging (desktop). On a touch screen: one finger reads the values, two fingers pinch to zoom / slide to pan, double-tap zooms out. The y-axis rescales to the visible window, and a roughly <strong>constant number of events stays on screen at every zoom level</strong> &mdash; drawn from a curated importance-ranked index of ~150 market events (at least one per year) (default '+DEFAULT_EVENT_COUNT+' on screen), most significant first, with finer detail filling in as you zoom into a period. Hover or tap the chart to read each asset&rsquo;s value on its own line. '
+    +'Zoom with the time-frame buttons or the mouse wheel (about the cursor); pan by dragging (desktop). On a touch screen: one finger reads the values, two fingers pinch to zoom / slide to pan, double-tap zooms out. The y-axis rescales to the visible window, and a roughly <strong>constant number of events stays on screen at every zoom level</strong> &mdash; drawn from a curated importance-ranked index of ~150 market events (at least one per year) (default '+DEFAULT_EVENT_COUNT+' on screen), most significant first, with finer detail filling in as you zoom into a period. The <strong>Events</strong> chips group every marker into seven kinds &mdash; crashes &amp; rallies, Fed &amp; rates, inflation / oil / currency, banking crises, tech &amp; market structure, geopolitics, and law / trade / institutions &mdash; switch some off to hunt for one kind of event through history. Hover or tap the chart to read each asset&rsquo;s value on its own line. '
     +'Stocks are the S&amp;P 500 <strong>monthly price</strong> (40.33 in Dec 1957 &rarr; 7,711 in Aug 2026), price return only. Cash is the 3-month U.S. Treasury-bill rate, compounded monthly. Bonds are the Bloomberg U.S. Aggregate: <strong>actual month-end total return of the iShares Core U.S. Aggregate Bond ETF (AGG)</strong> from its 2003 launch, the Vanguard Total Bond Market Index Fund (VBMFX, same benchmark) for 1987&ndash;2003, and a 10-year-yield model calibrated to published annual returns before that. Month-end values, so single-day extremes are muted, but every down month &mdash; 1994, 2013 and the &minus;13% of 2022 &mdash; is real. Because stocks exclude dividends while bonds and cash include income, the equity line understates stocks&rsquo; true lead. Past performance is not indicative of future results. '
     +'<br>Sources: S&amp;P Dow Jones Indices / R. Shiller (S&amp;P 500 monthly); FRED (TB3MS, GS10); iShares & Vanguard / Yahoo Finance (AGG, VBMFX total return); annual bond returns from Ibbotson / Morningstar. Monthly data through Aug 2026.';
 })();
