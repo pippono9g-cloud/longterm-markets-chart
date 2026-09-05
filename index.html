@@ -276,7 +276,23 @@
 [2001.96,"China joins the WTO ('the China shock')","Dec 2001","policy","pact",3],
 [2004.34,"EU enlargement: 10 new members","May 2004","policy","pact",5],
 [2020.01,"Brexit: the UK formally leaves the EU","Jan 2020","policy","globe",5],
-[2023.77,"Israel-Hamas war begins; oil risk premium","Oct 2023","shock","warning",4]
+[2023.77,"Israel-Hamas war begins; oil risk premium","Oct 2023","shock","warning",4],
+[1979.92,"Chrysler gets a federal bailout","Dec 1979","policy","auto",4],
+[1984.04,"AT&amp;T broken up into the 'Baby Bells'","Jan 1984","policy","monitor",3],
+[1993.04,"IBM posts a record loss; PC-era shakeout","Jan 1993","shock","monitor",5],
+[2003.21,"SARS outbreak slams airlines &amp; travel","Mar 2003","shock","plane",4],
+[2005.71,"Delta &amp; Northwest file for bankruptcy","Sep 2005","shock","plane",5],
+[2009.42,"GM &amp; Chrysler bankruptcy; Detroit bailout","Jun 2009","shock","auto",3],
+[2010.29,"BP Deepwater Horizon oil spill","Apr 2010","shock","oil",4],
+[2012.37,"Facebook's rocky IPO debut","May 2012","shock","monitor",5],
+[2015.71,"VW 'Dieselgate' emissions scandal","Sep 2015","shock","auto",4],
+[2015.79,"Theranos fraud exposed","Oct 2015","shock","pill",5],
+[2017.46,"Amazon buys Whole Foods; 'retail apocalypse' fears","Jun 2017","shock","tag",5],
+[2018.21,"Toys 'R' Us liquidates","Mar 2018","shock","tag",5],
+[2019.21,"Boeing 737 MAX grounded worldwide","Mar 2019","shock","plane",3],
+[2021.63,"Global chip shortage hits autos &amp; tech","Aug 2021","shock","chip",4],
+[2022.79,"Musk takes Twitter private","Oct 2022","milestone","monitor",5],
+[2024.04,"Boeing door-plug blowout; production halted","Jan 2024","shock","plane",4]
 ]
 </script>
 
@@ -323,7 +339,11 @@
     stamp:'<circle cx="12" cy="10" r="6"/><polygon points="12,6 13,9 16,9 13.5,11 14.5,14 12,12 9.5,14 10.5,11 8,9 11,9"/><line x1="5" y1="20" x2="19" y2="20"/>',
     oil:'<path d="M12 3 C7 10 5 13 5 16 a7 7 0 0 0 14 0 C19 13 17 10 12 3 Z"/>',
     dollar:'<circle cx="12" cy="12" r="9"/><path d="M15 9a3 3 0 0 0-3-2h-1a2.4 2.4 0 0 0 0 4.8h2a2.4 2.4 0 0 1 0 4.8h-1.5a3 3 0 0 1-3-2"/><line x1="12" y1="4" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="20"/>',
-    pact:'<circle cx="9" cy="12" r="5"/><circle cx="15" cy="12" r="5"/>'
+    pact:'<circle cx="9" cy="12" r="5"/><circle cx="15" cy="12" r="5"/>',
+    auto:'<path d="M4 16 L6 10 H18 L20 16"/><rect x="2" y="16" width="20" height="4" rx="1"/><circle cx="7" cy="20" r="1.6"/><circle cx="17" cy="20" r="1.6"/>',
+    chip:'<rect x="7" y="7" width="10" height="10" rx="1"/><line x1="9" y1="3" x2="9" y2="7"/><line x1="15" y1="3" x2="15" y2="7"/><line x1="9" y1="17" x2="9" y2="21"/><line x1="15" y1="17" x2="15" y2="21"/><line x1="3" y1="9" x2="7" y2="9"/><line x1="3" y1="15" x2="7" y2="15"/><line x1="17" y1="9" x2="21" y2="9"/><line x1="17" y1="15" x2="21" y2="15"/>',
+    plane:'<path d="M21 4 L3 12 L10 14 L12 21 L15 14 L21 4 Z"/>',
+    pill:'<rect x="3" y="9" width="18" height="6" rx="3"/><line x1="12" y1="9" x2="12" y2="15"/>'
   };
   function iconSVG(name,color,cx,cy){
     var s=20/24;
@@ -395,19 +415,24 @@
     {id:"us",     label:"U.S. politics &amp; elections",   icons:["ballot","tower"]},
     {id:"geo",    label:"Geopolitics &amp; conflict",      icons:["ship","flag"]},
     {id:"global", label:"Global markets &amp; shocks",     icons:["globe","warning","virus"]},
+    {id:"sector", label:"Industry &amp; sector",           icons:["auto","chip","plane","pill"]},
     {id:"policy", label:"Law, trade &amp; institutions",   icons:["stamp","pact","doc"]}
   ];
   var ICON_CAT={};
   GROUPS.forEach(function(g){g.icons.forEach(function(ic){ICON_CAT[ic]=g.id;});});
-  // per-event exceptions: a handful of "warning"/"globe"/"ballot" events read as
-  // U.S. domestic politics or as an actual international conflict rather than the
-  // generic "global markets" bucket their icon defaults to
+  // per-event exceptions: a handful of "warning"/"globe"/"ballot"/"monitor"/"oil"/"tag"
+  // events read as U.S. domestic politics, an actual international conflict, or a
+  // single-industry shock rather than the broader bucket their icon defaults to
   var CAT_OVERRIDE=[
     [/JFK assassination/,"us"],[/Nixon resigns/,"us"],[/New York City fiscal/,"us"],
     [/Brexit referendum/,"geo"],[/Cuban Missile Crisis/,"geo"],[/Russia invades Ukraine/,"geo"],
     [/Israel-Hamas war/,"geo"],[/Berlin Wall goes up/,"geo"],[/Berlin Wall falls/,"geo"],
     [/USSR dissolves/,"geo"],[/Nixon visits China/,"geo"],[/reform and opening/,"geo"],
-    [/Gorbachev takes power/,"geo"],[/formally leaves the EU/,"geo"]
+    [/Gorbachev takes power/,"geo"],[/formally leaves the EU/,"geo"],
+    [/AT&amp;T broken up/,"sector"],[/IBM posts a record loss/,"sector"],
+    [/BP Deepwater Horizon/,"sector"],[/Facebook.s rocky IPO/,"sector"],
+    [/Musk takes Twitter private/,"sector"],[/Amazon buys Whole Foods/,"sector"],
+    [/Toys .R. Us liquidates/,"sector"]
   ];
   function catOf(e){
     for(var i=0;i<CAT_OVERRIDE.length;i++) if(CAT_OVERRIDE[i][0].test(e[1])) return CAT_OVERRIDE[i][1];
@@ -962,7 +987,7 @@
   /* ============ FOOTNOTE ==================================== */
   document.getElementById("foot").innerHTML=
     '<strong>How to read this.</strong> Illustrative growth of a single $10,000 invested at the left edge of the window you are viewing (so the three lines always start together), drawn on a <strong>ratio (log) scale</strong>. Toggle the y-axis between that dollar value and cumulative % return. '
-    +'Zoom with the time-frame buttons or the mouse wheel (about the cursor); pan by dragging (desktop). On a touch screen: one finger reads the values, two fingers pinch to zoom / slide to pan, double-tap zooms out. The y-axis rescales to the visible window, and a roughly <strong>constant number of events stays on screen at every zoom level</strong> &mdash; drawn from a curated importance-ranked index of ~150 market events (at least one per year) (default '+DEFAULT_EVENT_COUNT+' on screen), most significant first, with finer detail filling in as you zoom into a period. The <strong>Events</strong> chips group every marker into nine kinds &mdash; crashes &amp; rallies, Fed &amp; rates, inflation / oil / currency, banking crises, tech &amp; market structure, U.S. politics &amp; elections, geopolitics &amp; conflict, global markets &amp; shocks, and law / trade / institutions &mdash; switch some off to hunt for one kind of event through history. Hover or tap the chart to read each asset&rsquo;s value on its own line. '
+    +'Zoom with the time-frame buttons or the mouse wheel (about the cursor); pan by dragging (desktop). On a touch screen: one finger reads the values, two fingers pinch to zoom / slide to pan, double-tap zooms out. The y-axis rescales to the visible window, and a roughly <strong>constant number of events stays on screen at every zoom level</strong> &mdash; drawn from a curated importance-ranked index of ~150 market events (at least one per year) (default '+DEFAULT_EVENT_COUNT+' on screen), most significant first, with finer detail filling in as you zoom into a period. The <strong>Events</strong> chips group every marker into ten kinds &mdash; crashes &amp; rallies, Fed &amp; rates, inflation / oil / currency, banking crises, tech &amp; market structure, U.S. politics &amp; elections, geopolitics &amp; conflict, global markets &amp; shocks, industry &amp; sector, and law / trade / institutions &mdash; switch some off to hunt for one kind of event through history. Sector events (autos, airlines, pharma, chips, retail&hellip;) mostly move a single industry rather than the whole market &mdash; they add texture without changing the story. Hover or tap the chart to read each asset&rsquo;s value on its own line. '
     +'Stocks are the S&amp;P 500 <strong>monthly price</strong> (40.33 in Dec 1957 &rarr; 7,711 in Aug 2026), price return only. Cash is the 3-month U.S. Treasury-bill rate, compounded monthly. Bonds are the Bloomberg U.S. Aggregate: <strong>actual month-end total return of the iShares Core U.S. Aggregate Bond ETF (AGG)</strong> from its 2003 launch, the Vanguard Total Bond Market Index Fund (VBMFX, same benchmark) for 1987&ndash;2003, and a 10-year-yield model calibrated to published annual returns before that. Month-end values, so single-day extremes are muted, but every down month &mdash; 1994, 2013 and the &minus;13% of 2022 &mdash; is real. Because stocks exclude dividends while bonds and cash include income, the equity line understates stocks&rsquo; true lead. Past performance is not indicative of future results. '
     +'<br>Sources: S&amp;P Dow Jones Indices / R. Shiller (S&amp;P 500 monthly); FRED (TB3MS, GS10); iShares & Vanguard / Yahoo Finance (AGG, VBMFX total return); annual bond returns from Ibbotson / Morningstar. Monthly data through Aug 2026.';
 })();
