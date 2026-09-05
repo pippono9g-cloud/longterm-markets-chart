@@ -552,9 +552,7 @@
     b.innerHTML=g.label;b.title="Show / hide "+g.label.replace(/&amp;/g,"&")+" events";
     b.setAttribute("aria-pressed","true");
     b.addEventListener("click",function(){
-      state.gset[g.id]=!state.gset[g.id];
-      if(GROUPS.every(function(x){return !state.gset[x.id];}))   // never leave it empty
-        GROUPS.forEach(function(x){state.gset[x.id]=true;});
+      state.gset[g.id]=!state.gset[g.id];   // all off is allowed - shows a bare chart with no markers
       syncGrpBtns(); render();
     });
     return b;
