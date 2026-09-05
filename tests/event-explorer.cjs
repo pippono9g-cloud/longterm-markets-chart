@@ -13,6 +13,9 @@ function flushFrames(){const jobs=[...frames.values()];frames.clear();jobs.forEa
 function settle(){flushFrames();const jobs=[...timers.values()];timers.clear();jobs.forEach(fn=>fn());flushFrames();}
 const ctx=vm.createContext({document,window,console,setTimeout:timeout,clearTimeout:id=>timers.delete(id),requestAnimationFrame:raf});
 vm.runInContext(html.match(/<script>([\s\S]*?)<\/script>/)[1],ctx);
+const eventData=JSON.parse(document.getElementById('event-data').textContent);
+const initialStatus=document.getElementById('event-status');
+const visibleTotal=eventData.filter(e=>e[0]>=+initialStatus.getAttribute('data-period-start')&&e[0]<=+initialStatus.getAttribute('data-period-end')).length;
 const click=b=>b.dispatchEvent(new window.Event('click'));
 const btn=t=>[...document.querySelectorAll('button')].find(b=>b.textContent===t);
 const search=document.querySelector('input[type=search]');
@@ -23,7 +26,7 @@ assert(document.getElementById('event-list').textContent.includes('LTCM'));
 assert(document.getElementById('event-list').textContent.includes('Fitch'));
 assert(btn('Select all'));
 click(btn('Select all'));
-assert.equal(document.querySelectorAll('.event-item').length,189);
+assert.equal(document.querySelectorAll('.event-item').length,visibleTotal);
 click(btn('Clear'));assert.equal(document.querySelectorAll('.event-item').length,0);
 query('Lehman');assert.equal(document.querySelectorAll('.event-item').length,1);
 click(document.querySelector('.event-item'));
@@ -32,11 +35,11 @@ click(btn('Focus chart on this period'));
 assert(document.getElementById('view-summary').textContent.includes('2006'));
 query('not-a-real-event');assert(document.getElementById('event-status').textContent.includes('No matching'));
 query('');click(btn('Select all'));click(btn('Reset view'));
-assert.equal(document.querySelectorAll('.event-item').length,189);
+assert.equal(document.querySelectorAll('.event-item').length,visibleTotal);
 assert(document.querySelectorAll('.evt-label').length<=12);
 svg.getBoundingClientRect=()=>({width:390});click(btn('Reset view'));
 assert.equal(document.querySelectorAll('.evt-label').length,0);
-assert.equal(document.querySelectorAll('.event-item').length,189);
+assert.equal(document.querySelectorAll('.event-item').length,visibleTotal);
 const data=JSON.parse(document.getElementById('event-data').textContent);
 assert.deepEqual(data,JSON.parse(fs.readFileSync(require('path').join(__dirname,'../events.json'),'utf8')));
 assert.equal(new Set(data.map(e=>e[6].id)).size,189);
@@ -47,7 +50,7 @@ svg.getBoundingClientRect=()=>({width:1200});query('');click(btn('Select all'));
 const hit=svg.parentNode,status=document.getElementById('event-status');
 function fire(target,type,props){const e=new window.Event(type,{bubbles:true,cancelable:true});Object.assign(e,props);target.dispatchEvent(e);return e;}
 function currentRange(){return [+status.getAttribute('data-period-start'),+status.getAttribute('data-period-end')];}
-function checkCount(){const [start,end]=currentRange();assert.equal(+status.getAttribute('data-visible-count'),data.filter(e=>e[0]>=start&&e[0]<=end).length);}
+function checkCount(){const [start,end]=currentRange();const expected=data.filter(e=>e[0]>=start&&e[0]<=end).sort((a,b)=>a[0]-b[0]);assert.equal(+status.getAttribute('data-visible-count'),expected.length);assert.deepEqual([...document.querySelectorAll('.event-item')].map(b=>b.getAttribute('data-list-event')),expected.map(e=>e[6].id));}
 const fullCount=+status.getAttribute('data-visible-count');
 const wheel=fire(hit,'wheel',{deltaY:-900,deltaX:0,clientX:900,clientY:300,ctrlKey:false,metaKey:false});
 assert(wheel.defaultPrevented);flushFrames();checkCount();
@@ -68,5 +71,9 @@ fire(hit,'touchend',{touches:[]});const after=currentRange();assert(Math.abs(aft
 // All events have individual Thai summaries, with explicit source scope where supplied.
 assert(data.every(e=>e[6].summaryTh.length>60));assert.equal(new Set(data.map(e=>e[6].summaryTh)).size,189);
 assert(data.every(e=>e[6].sources.every(s=>s.url.startsWith('https://')&&s.scope)));
-query('กำแพงเบอร์ลิน');assert(document.querySelectorAll('.event-item').length>=2);
+click(btn('Reset view'));query('กำแพงเบอร์ลิน');assert(document.querySelectorAll('.event-item').length>=2);
 console.log('PASS: plain mouse-wheel zoom, live visible-period count, persistent selection ring, Thai detail/source rendering, touch-pinch live/committed range, 189 unique summaries and Thai search.');
+
+// A query outside the current window gives guidance; resetting makes it findable again.
+click(btn('Clear'));click(btn('5Y'));query('Lehman');assert.equal(document.querySelectorAll('.event-item').length,0);assert(status.textContent.includes('No matching events in this visible period'));click(btn('Reset view'));assert.equal(document.querySelectorAll('.event-item').length,1);
+console.log('PASS: list IDs match the visible range during wheel/pinch, and search respects the visible period with reset recovery.');

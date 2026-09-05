@@ -7,9 +7,9 @@ Live: https://pippono9g-cloud.github.io/longterm-markets-chart/
 ## Explore events
 
 - Choose any combination of categories; matching uses OR across explicit tags.
-- Search across the complete history, independently of category selection and the visible period.
+- Search within the visible period, independently of category selection. Zoom out or Reset view to search a wider period.
 - Select all and Clear remain separate controls. Major events limits results to editorial tiers 1–2.
-- Every match appears in a chronological list. Select a row or chart annotation to read a Thai event summary, scoped references when available, and related events. Focus the chart on that period from the detail card.
+- Matches in the visible period appear in a chronological list that updates during mouse-wheel zoom, pinch and pan. Select a row or chart annotation to read a Thai event summary, scoped references when available, and related events. Focus the chart on that period from the detail card.
 - A dark ring identifies the event being viewed; selection survives chart redraws.
 - Mouse-wheel and two-finger pinch zoom update the visible-period count while moving, not only on release.
 - Chart labels are limited by available width; narrow screens use the event list instead.

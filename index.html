@@ -102,7 +102,7 @@
     </div>
 
     <p id="view-summary" class="view-summary"></p>
-    <p class="help">Choose event categories below, or search all events. Drag to pan · Scroll or pinch to zoom. Returns restart at the visible period’s beginning.</p>
+    <p class="help">Choose event categories below, or search events in the visible period. Drag to pan · Scroll or pinch to zoom. Returns restart at the visible period’s beginning.</p>
     <figure>
       <div class="chart-scroll">
         <svg id="chart" viewBox="0 0 1760 780" role="img"
@@ -346,7 +346,7 @@
   grpClear.addEventListener("click",function(){GROUPS.forEach(function(g){state.gset[g.id]=false;});search.value="";syncGrpBtns();render();updateExplorer();});
   function syncGrpBtns(){grpBtns.forEach(function(b,i){b.setAttribute("aria-pressed",String(state.gset[GROUPS[i].id]));});}
   syncGrpBtns();
-  var search=document.createElement("input");search.type="search";search.placeholder="Search all events — Lehman, COVID, inflation…";search.setAttribute("aria-label","Search all events");
+  var search=document.createElement("input");search.type="search";search.placeholder="Search visible period — Lehman, COVID, inflation…";search.setAttribute("aria-label","Search events in visible period");
   var level=document.createElement("select");level.setAttribute("aria-label","Event detail level");level.innerHTML='<option value="all">All matching events</option><option value="major">Major events only</option>';
   var eventTools=document.getElementById("event-tools");eventTools.appendChild(search);eventTools.appendChild(level);
   var categoryRow=document.createElement("div");categoryRow.className="controls";categoryRow.setAttribute("role","group");categoryRow.setAttribute("aria-label","Event categories");
@@ -390,15 +390,22 @@
     var status=document.getElementById("event-status");
     status.setAttribute("data-visible-count",String(inPeriod));
     status.setAttribute("data-period-start",String(d[0]));status.setAttribute("data-period-end",String(d[1]));
-    status.textContent=rows.length ? rows.length+' matching events across history · '+inPeriod+' in the visible period ('+fmtDate(d[0])+' – '+fmtDate(d[1])+'). Chart labels show a limited selection; every match is listed below.' : (search.value.trim() ? 'No matching events. Try another name or choose All matching events.' : 'Choose categories above or search all events to begin.');
+    status.textContent=rows.length ? rows.length+' matching events across history · '+inPeriod+' in the visible period ('+fmtDate(d[0])+' – '+fmtDate(d[1])+'). Chart labels show a limited selection; the list follows this visible period.' : (search.value.trim() ? 'No matching events. Try another name or choose All matching events.' : 'Choose categories above or search all events to begin.');
+    var visibleRows=rows.filter(function(e){return e[0]>=d[0]&&e[0]<=d[1];}).sort(function(a,b){return a[0]-b[0];});
+    updateVisibleList(visibleRows);
+    if(rows.length && !visibleRows.length)status.textContent='No matching events in this visible period. Zoom out or use Reset view to search a wider period.';
     document.getElementById("view-summary").textContent=(state.pct?'Cumulative return from ':'Value of $10,000 invested from ')+fmtDate(times[idxAt(d[0])])+' to '+fmtDate(times[idxAt(d[1])])+' · Ratio (log) scale';
   }
-  function updateExplorer(){
-    var rows=events.filter(matches).sort(function(a,b){return a[0]-b[0];});
-    var list=document.getElementById("event-list");list.replaceChildren();
-    rows.forEach(function(e){var b=document.createElement("button");b.type="button";b.className="event-item";b.setAttribute("aria-pressed",String(selectedEvent===e));b.innerHTML=escapeText(plain(e[1]))+'<small>'+escapeText(e[2])+' · '+escapeText(GROUPS.find(function(g){return g.id===catOf(e);}).label)+'</small>';b.onclick=function(){showEvent(e);};list.appendChild(b);});
-    updatePeriodStatus();
+  var listKey=null;
+  function updateVisibleList(rows){
+    var key=rows.map(function(e){return e[6].id;}).join(",");
+    var list=document.getElementById("event-list");
+    if(key===listKey){list.querySelectorAll(".event-item").forEach(function(b){b.setAttribute("aria-pressed",String(!!selectedEvent && b.getAttribute("data-list-event")===selectedEvent[6].id));});return;}
+    listKey=key;list.replaceChildren();list.scrollTop=0;
+    rows.forEach(function(e){var b=document.createElement("button");b.type="button";b.className="event-item";b.setAttribute("data-list-event",e[6].id);b.setAttribute("aria-pressed",String(selectedEvent===e));b.innerHTML=escapeText(plain(e[1]))+'<small>'+escapeText(e[2])+' · '+escapeText(GROUPS.find(function(g){return g.id===catOf(e);}).label)+'</small>';b.onclick=function(){showEvent(e);};list.appendChild(b);});
+    if(!rows.length){var empty=document.createElement("p");empty.className="help";empty.textContent='No events to display in this period. Choose categories, change your search, or zoom out.';list.appendChild(empty);}
   }
+  function updateExplorer(){updatePeriodStatus();}
   function zoomBy(f){var mid=(state.dom[0]+state.dom[1])/2,span=(state.dom[1]-state.dom[0])*f;span=Math.max(MINSPAN,Math.min(END-START,span));var left=Math.max(START,Math.min(mid-span/2,END-span));state.dom=[left,left+span];syncFrButtons();render();}
   mkBtn("+","Zoom in").addEventListener("click",function(){zoomBy(0.5);});
   mkBtn("−","Zoom out").addEventListener("click",function(){zoomBy(2);});
@@ -847,7 +854,7 @@
   /* ============ FOOTNOTE ==================================== */
   document.getElementById("foot").innerHTML=
     '<strong>How to read this.</strong> Illustrative growth of a single $10,000 invested at the left edge of the window you are viewing (so the three lines always start together), drawn on a <strong>ratio (log) scale</strong>. Toggle the y-axis between that dollar value and cumulative % return. '
-    +'Use the time-frame buttons or + / − to zoom. Mouse wheel or pinch zooms; drag to pan. Select categories (matches any selected category), or search across all event names and categories. The list contains every match; chart labels are limited to avoid crowding and are hidden on narrow screens. Select a list item for details and a focus-period button. Category tags describe context, not a single proven cause. Event dates are approximate and importance is editorial. '
+    +'Use the time-frame buttons or + / − to zoom. Mouse wheel or pinch zooms; drag to pan. Select categories (matches any selected category), or search event names and categories within the visible period. The list follows zoom and pan; chart labels are limited to avoid crowding and are hidden on narrow screens. Select a list item for details and a focus-period button. Category tags describe context, not a single proven cause. Event dates are approximate and importance is editorial. '
     +'Stocks are the S&amp;P 500 <strong>monthly price</strong> (40.33 in Dec 1957 &rarr; 7,711 in Aug 2026), price return only. Cash is the 3-month U.S. Treasury-bill rate, compounded monthly. Bonds are the Bloomberg U.S. Aggregate: <strong>actual month-end total return of the iShares Core U.S. Aggregate Bond ETF (AGG)</strong> from its 2003 launch, the Vanguard Total Bond Market Index Fund (VBMFX, same benchmark) for 1987&ndash;2003, and a 10-year-yield model calibrated to published annual returns before that. Month-end values, so single-day extremes are muted, but every down month &mdash; 1994, 2013 and the &minus;13% of 2022 &mdash; is real. Because stocks exclude dividends while bonds and cash include income, the equity line understates stocks&rsquo; true lead. Past performance is not indicative of future results. '
     +'<br>Sources: S&amp;P Dow Jones Indices / R. Shiller (S&amp;P 500 monthly); FRED (TB3MS, GS10); iShares & Vanguard / Yahoo Finance (AGG, VBMFX total return); annual bond returns from Ibbotson / Morningstar. Monthly data through Aug 2026.';
 })();
