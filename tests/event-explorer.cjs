@@ -20,7 +20,8 @@ const click=b=>b.dispatchEvent(new window.Event('click'));
 const btn=t=>[...document.querySelectorAll('button')].find(b=>b.textContent===t);
 const search=document.querySelector('input[type=search]');
 function query(q){search.value=q;search.dispatchEvent(new window.Event('input'));}
-assert(document.getElementById('event-status').textContent.includes('Choose categories'));
+assert.equal(document.querySelectorAll('.event-item').length,visibleTotal);
+click(btn('Clear'));assert.equal(document.querySelectorAll('.event-item').length,0);
 click(btn('Banking & credit'));
 assert(document.getElementById('event-list').textContent.includes('LTCM'));
 assert(document.getElementById('event-list').textContent.includes('Fitch'));
@@ -43,7 +44,7 @@ assert.equal(document.querySelectorAll('.event-item').length,visibleTotal);
 const data=JSON.parse(document.getElementById('event-data').textContent);
 assert.deepEqual(data,JSON.parse(fs.readFileSync(require('path').join(__dirname,'../events.json'),'utf8')));
 assert.equal(new Set(data.map(e=>e[6].id)).size,189);
-console.log('PASS: initial state, credit mappings, select all/clear, search, details, focus, reset, label budget, narrow-screen list and data parity.');
+console.log('PASS: default select-all state, credit mappings, select all/clear, search, details, focus, reset, label budget, narrow-screen list and data parity.');
 
 // Regression: mouse-wheel zoom needs no modifier and updates the visible count before settling.
 svg.getBoundingClientRect=()=>({width:1200});query('');click(btn('Select all'));click(btn('Reset view'));
@@ -74,6 +75,6 @@ assert(data.every(e=>e[6].sources.every(s=>s.url.startsWith('https://')&&s.scope
 click(btn('Reset view'));query('กำแพงเบอร์ลิน');assert(document.querySelectorAll('.event-item').length>=2);
 console.log('PASS: plain mouse-wheel zoom, live visible-period count, persistent selection ring, Thai detail/source rendering, touch-pinch live/committed range, 189 unique summaries and Thai search.');
 
-// A query outside the current window gives guidance; resetting makes it findable again.
-click(btn('Clear'));click(btn('5Y'));query('Lehman');assert.equal(document.querySelectorAll('.event-item').length,0);assert(status.textContent.includes('No matching events in this visible period'));click(btn('Reset view'));assert.equal(document.querySelectorAll('.event-item').length,1);
-console.log('PASS: list IDs match the visible range during wheel/pinch, and search respects the visible period with reset recovery.');
+// A query outside the current window automatically pans to the matching event.
+click(btn('Clear'));click(btn('5Y'));query('Lehman');assert.equal(document.querySelectorAll('.event-item').length,1);click(document.querySelector('.event-item'));settle();const searchedRange=currentRange();assert(searchedRange[0]<2008.8&&searchedRange[1]>2008.6);
+console.log('PASS: list IDs match the visible range during wheel/pinch, and global search pans to an event outside the current period.');
