@@ -157,10 +157,10 @@
        ust10y  : 10-year U.S. Treasury yield      (FRED: GS10)
      Mirror of series.json in the repo. */
   var M = JSON.parse(document.getElementById("series-data").textContent);
-  var BASE = 10000;
-  var START = M[0][0], END = M[M.length-1][0];
-
   var events = JSON.parse(document.getElementById("event-data").textContent);
+  var BASE = 10000;
+  var START = M[0][0], END = Math.max(M[M.length-1][0],Math.max.apply(null,events.map(function(e){return e[0];})));
+
   var DEFAULT_EVENT_COUNT = 14;   // recommended on-screen count; ~12 in the full-history view
 
   var ICONS={
