@@ -43,7 +43,7 @@ assert.equal(document.querySelectorAll('.evt-label').length,0);
 assert.equal(document.querySelectorAll('.event-item').length,visibleTotal);
 const data=JSON.parse(document.getElementById('event-data').textContent);
 assert.deepEqual(data,JSON.parse(fs.readFileSync(require('path').join(__dirname,'../events.json'),'utf8')));
-assert.equal(new Set(data.map(e=>e[6].id)).size,191);
+assert.equal(new Set(data.map(e=>e[6].id)).size,192);
 console.log('PASS: default select-all state, credit mappings, select all/clear, search, details, focus, reset, label budget, narrow-screen list and data parity.');
 
 // Regression: mouse-wheel zoom needs no modifier and updates the visible count before settling.
@@ -70,17 +70,17 @@ fire(hit,'touchmove',{touches:[{clientX:300,clientY:300},{clientX:900,clientY:30
 const during=currentRange();assert(during[1]-during[0]<before[1]-before[0]);assert(+status.getAttribute('data-visible-count')<fullCount);checkCount();
 fire(hit,'touchend',{touches:[]});const after=currentRange();assert(Math.abs(after[0]-during[0])<0.00001);assert(Math.abs(after[1]-during[1])<0.00001);checkCount();
 // All events have individual Thai summaries, with explicit source scope where supplied.
-assert(data.every(e=>e[6].summaryTh.length>60));assert.equal(new Set(data.map(e=>e[6].summaryTh)).size,191);
+assert(data.every(e=>e[6].summaryTh.length>60));assert.equal(new Set(data.map(e=>e[6].summaryTh)).size,192);
 assert(data.every(e=>e[6].sources.every(s=>s.url.startsWith('https://')&&s.scope)));
 click(btn('Reset zoom'));query('กำแพงเบอร์ลิน');assert(document.querySelectorAll('.event-item').length>=2);
-console.log('PASS: plain mouse-wheel zoom, live visible-period count, persistent selection ring, Thai detail/source rendering, touch-pinch live/committed range, 190 unique summaries and Thai search.');
+console.log('PASS: plain mouse-wheel zoom, live visible-period count, persistent selection ring, Thai detail/source rendering, touch-pinch live/committed range, 192 unique summaries and Thai search.');
 
 // A query outside the current window automatically pans to the matching event.
 click(btn('Clear'));click(btn('5Y'));query('Lehman');assert.equal(document.querySelectorAll('.event-item').length,1);click(document.querySelector('.event-item'));settle();const searchedRange=currentRange();assert(searchedRange[0]<2008.8&&searchedRange[1]>2008.6);
 console.log('PASS: list IDs match the visible range during wheel/pinch, and global search pans to an event outside the current period.');
 
 // Events newer than the latest monthly series keep every unavailable horizon blank.
-click(btn('Reset zoom'));query('Fed restarts tightening');assert.equal(document.querySelectorAll('.event-item').length,1);click(document.querySelector('.event-item'));
+click(btn('Reset zoom'));query('Fed raises rates after the easing cycle');assert.equal(document.querySelectorAll('.event-item').length,1);click(document.querySelector('.event-item'));
 assert.equal(document.querySelectorAll('.perf-item strong').length,4);
 assert([...document.querySelectorAll('.perf-item strong')].every(el=>el.textContent==='–'));
 assert(document.getElementById('event-detail').textContent.includes('Follow-up data is not available yet.'));
