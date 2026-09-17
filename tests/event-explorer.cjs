@@ -35,10 +35,10 @@ assert(document.getElementById('event-detail').textContent.includes('Lehman'));
 click(btn('Focus chart on this period'));
 assert(document.getElementById('view-summary').textContent.includes('2006'));
 query('not-a-real-event');assert(document.getElementById('event-status').textContent.includes('No matching'));
-query('');click(btn('Select all'));click(btn('Reset view'));
+query('');click(btn('Select all'));click(btn('Reset zoom'));
 assert.equal(document.querySelectorAll('.event-item').length,visibleTotal);
 assert(document.querySelectorAll('.evt-label').length<=12);
-svg.getBoundingClientRect=()=>({width:390});click(btn('Reset view'));
+svg.getBoundingClientRect=()=>({width:390});click(btn('Reset zoom'));
 assert.equal(document.querySelectorAll('.evt-label').length,0);
 assert.equal(document.querySelectorAll('.event-item').length,visibleTotal);
 const data=JSON.parse(document.getElementById('event-data').textContent);
@@ -47,7 +47,7 @@ assert.equal(new Set(data.map(e=>e[6].id)).size,191);
 console.log('PASS: default select-all state, credit mappings, select all/clear, search, details, focus, reset, label budget, narrow-screen list and data parity.');
 
 // Regression: mouse-wheel zoom needs no modifier and updates the visible count before settling.
-svg.getBoundingClientRect=()=>({width:1200});query('');click(btn('Select all'));click(btn('Reset view'));
+svg.getBoundingClientRect=()=>({width:1200});query('');click(btn('Select all'));click(btn('Reset zoom'));
 const hit=svg.parentNode,status=document.getElementById('event-status');
 function fire(target,type,props){const e=new window.Event(type,{bubbles:true,cancelable:true});Object.assign(e,props);target.dispatchEvent(e);return e;}
 function currentRange(){return [+status.getAttribute('data-period-start'),+status.getAttribute('data-period-end')];}
@@ -64,7 +64,7 @@ assert.equal(document.querySelectorAll('.detail-sources a').length,2);
 assert.equal(document.querySelectorAll('.event-item').length,1);
 click(btn('+'));active=svg.querySelector('[data-event][aria-pressed="true"]');assert(active);assert.equal(svg.querySelectorAll('[aria-pressed="true"]').length,1);
 // Two-finger touch updates the count during its GPU transform and commits the same range.
-query('');click(btn('Select all'));click(btn('Reset view'));const before=currentRange();
+query('');click(btn('Select all'));click(btn('Reset zoom'));const before=currentRange();
 fire(hit,'touchstart',{touches:[{clientX:500,clientY:300},{clientX:700,clientY:300}]});
 fire(hit,'touchmove',{touches:[{clientX:300,clientY:300},{clientX:900,clientY:300}]});
 const during=currentRange();assert(during[1]-during[0]<before[1]-before[0]);assert(+status.getAttribute('data-visible-count')<fullCount);checkCount();
@@ -72,7 +72,7 @@ fire(hit,'touchend',{touches:[]});const after=currentRange();assert(Math.abs(aft
 // All events have individual Thai summaries, with explicit source scope where supplied.
 assert(data.every(e=>e[6].summaryTh.length>60));assert.equal(new Set(data.map(e=>e[6].summaryTh)).size,191);
 assert(data.every(e=>e[6].sources.every(s=>s.url.startsWith('https://')&&s.scope)));
-click(btn('Reset view'));query('กำแพงเบอร์ลิน');assert(document.querySelectorAll('.event-item').length>=2);
+click(btn('Reset zoom'));query('กำแพงเบอร์ลิน');assert(document.querySelectorAll('.event-item').length>=2);
 console.log('PASS: plain mouse-wheel zoom, live visible-period count, persistent selection ring, Thai detail/source rendering, touch-pinch live/committed range, 190 unique summaries and Thai search.');
 
 // A query outside the current window automatically pans to the matching event.
@@ -80,7 +80,7 @@ click(btn('Clear'));click(btn('5Y'));query('Lehman');assert.equal(document.query
 console.log('PASS: list IDs match the visible range during wheel/pinch, and global search pans to an event outside the current period.');
 
 // Events newer than the latest monthly series keep every unavailable horizon blank.
-click(btn('Reset view'));query('Fed restarts tightening');assert.equal(document.querySelectorAll('.event-item').length,1);click(document.querySelector('.event-item'));
+click(btn('Reset zoom'));query('Fed restarts tightening');assert.equal(document.querySelectorAll('.event-item').length,1);click(document.querySelector('.event-item'));
 assert.equal(document.querySelectorAll('.perf-item strong').length,4);
 assert([...document.querySelectorAll('.perf-item strong')].every(el=>el.textContent==='–'));
 assert(document.getElementById('event-detail').textContent.includes('Follow-up data is not available yet.'));

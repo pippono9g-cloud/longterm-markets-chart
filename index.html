@@ -48,6 +48,10 @@
   .yr-in::placeholder{color:var(--ink-mute);font-weight:400}
   .yr-in:focus-visible{outline:2px solid var(--scb);outline-offset:1px}
   .controls .dash{color:var(--ink-mute);font-weight:700;margin:0 -2px}
+  .data-status{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0 4px;align-items:center}
+  .status-pill{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--hair);border-radius:999px;padding:5px 10px;background:var(--soft);color:var(--ink-soft);font-size:11.5px;font-weight:700}
+  .status-pill.event{background:#fff;color:var(--scb);border-color:var(--scb)}
+  .status-pill.at-latest{background:#eef8f2;color:#16734a;border-color:#a8d7ba}
   figure{margin:12px 0 0;position:relative;touch-action:none}
   svg{display:block;width:100%;height:auto;overflow:visible;touch-action:none;cursor:crosshair;
     -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
@@ -65,6 +69,8 @@
   .evt-date{fill:var(--ink-mute);font-size:11px;font-weight:400}
   .series-end{font-size:12.5px;font-weight:700;font-variant-numeric:tabular-nums}
   .cross{stroke:var(--ink-soft);stroke-width:1;stroke-dasharray:3 3;opacity:.75}
+  .data-cutoff{stroke:var(--ink-soft);stroke-width:1.4;stroke-dasharray:5 4}
+  .future-zone{fill:var(--soft);opacity:.58}
 
   .help,.view-summary{color:var(--ink-soft);font-size:13px}.view-summary{font-weight:700}
   .tf-btn{min-height:36px}.tf-btn.grp{min-height:36px}.tf-btn.grp[aria-pressed="true"]{background:var(--scb-l);border-color:var(--scb);color:var(--scb)}
@@ -106,6 +112,11 @@
       <span class="lbl">Time frame</span>
     </div>
 
+    <div class="data-status" aria-live="polite">
+      <span id="market-data-status" class="status-pill"></span>
+      <span id="latest-event-status" class="status-pill event"></span>
+      <span id="latest-position-status" class="status-pill at-latest" hidden></span>
+    </div>
     <p id="view-summary" class="view-summary"></p>
     <p class="help">Choose event categories below, or search events across the full history. Selecting a search result moves the chart to that event. Drag to pan · Scroll or pinch to zoom. Returns restart at the visible period’s beginning.</p>
     <figure>
@@ -159,6 +170,7 @@
   var M = JSON.parse(document.getElementById("series-data").textContent);
   var events = JSON.parse(document.getElementById("event-data").textContent);
   var BASE = 10000;
+  var DATA_END = M[M.length-1][0];
   var START = M[0][0], END = Math.max(M[M.length-1][0],Math.max.apply(null,events.map(function(e){return e[0];})));
 
   var DEFAULT_EVENT_COUNT = 14;   // recommended on-screen count; ~12 in the full-history view
@@ -255,7 +267,7 @@
   var GROUPS=[{"id": "rates", "label": "Central banks & rates"}, {"id": "usecon", "label": "Economy & inflation"}, {"id": "commod", "label": "Oil & commodities"}, {"id": "fx", "label": "Currencies & FX"}, {"id": "credit", "label": "Banking & credit"}, {"id": "tech", "label": "Technology & AI"}, {"id": "structure", "label": "Market structure & valuations"}, {"id": "us", "label": "U.S. politics & elections"}, {"id": "geo", "label": "Geopolitics & conflict"}, {"id": "global", "label": "Global markets & health"}, {"id": "sector", "label": "Companies & industries"}, {"id": "policy", "label": "Fiscal policy, law & trade"}];
   function catOf(e){return e[6].groups[0];}
   var FRAMES=[
-    {k:"Max",yrs:END-START},{k:"40Y",yrs:40},{k:"25Y",yrs:25},
+    {k:"All history",yrs:END-START},{k:"40Y",yrs:40},{k:"25Y",yrs:25},
     {k:"15Y",yrs:15},{k:"10Y",yrs:10},{k:"5Y",yrs:5}
   ];
   var state={fi:0,rebase:true,pct:true,dom:[START,END],gset:{}};   // default: % return, rebased to window
@@ -303,7 +315,7 @@
   yrGo.addEventListener("click",applyYears);
   function syncYearInputs(){
     var d=curDomain||state.dom;
-    if(document.activeElement!==yrFrom) yrFrom.value=Math.max(YMIN,Math.round(d[0]));
+    if(document.activeElement!==yrFrom) yrFrom.value=Math.max(YMIN,Math.floor(d[0]+1e-6));
     if(document.activeElement!==yrTo)   yrTo.value  =(d[1]>=END-0.05)?YMAX:Math.min(YMAX,Math.round(d[1]-0.5));
   }
 
@@ -400,7 +412,7 @@
     var panel=document.getElementById("event-detail"), meta=e[6],perf=eventPerformance(e);
     var body='<h2>'+escapeText(plain(e[1]))+'</h2><p class="detail-meta">'+escapeText(e[2])+' · '+escapeText(kind)+'</p><p class="detail-tags">'+escapeText(groups.join(" · "))+'</p>';
     body+='<div class="event-performance"><span>S&amp;P 500 performance after event</span><div class="perf-grid">';
-    perf.periods.forEach(function(p){var value=p.pct===null?'–':(p.pct>=0?'+':'−')+Math.abs(p.pct).toFixed(1)+'%',cls=p.pct===null?'':p.pct>=0?'pos':'neg';body+='<div class="perf-item"><span>'+p.months+'M</span><strong class="'+cls+'">'+escapeText(value)+'</strong></div>';});
+    perf.periods.forEach(function(p){var missing=p.pct===null,value=missing?'–':(p.pct>=0?'+':'−')+Math.abs(p.pct).toFixed(1)+'%',cls=missing?'':p.pct>=0?'pos':'neg',note=missing?'Price data unavailable or this period has not elapsed':'';body+='<div class="perf-item"'+(note?' title="'+escapeText(note)+'" aria-label="'+p.months+' month performance: '+escapeText(note)+'"':'')+'><span>'+p.months+'M</span><strong class="'+cls+'">'+escapeText(value)+'</strong></div>';});
     body+='</div><small>Baseline: '+escapeText(fmtDate(perf.base))+' month-end, immediately before the event · Price return, excluding dividends</small>';
     body+='<div class="market-response"><span>Market response timeline · 12-month follow-up</span>';
     if(perf.available===0){
@@ -439,7 +451,13 @@
     status.textContent=rows.length ? rows.length+' matching events across history · '+inPeriod+' in the visible period ('+fmtDate(d[0])+' – '+fmtDate(d[1])+'). '+(searching?'Select a result to move the chart to that event.':'Chart labels show a limited selection; the list follows this visible period.') : (searching ? 'No matching events. Try another name or choose All matching events.' : 'Choose categories above or search all events to begin.');
     var visibleRows=rows.filter(function(e){return e[0]>=d[0]&&e[0]<=d[1];}).sort(function(a,b){return a[0]-b[0];});
     updateVisibleList(searching ? rows.slice().sort(function(a,b){return a[0]-b[0];}) : visibleRows);
-    document.getElementById("view-summary").textContent=(state.pct?'Cumulative return from ':'Value of $10,000 invested from ')+fmtDate(times[idxAt(d[0])])+' to '+fmtDate(times[idxAt(d[1])])+' · Ratio (log) scale';
+    var dataRight=Math.min(d[1],DATA_END), dataLeft=Math.min(d[0],DATA_END);
+    document.getElementById("view-summary").textContent=(state.pct?'Cumulative return from ':'Value of $10,000 invested from ')+fmtDate(times[idxAt(dataLeft)])+' to '+fmtDate(times[idxAt(dataRight)])+(d[1]>DATA_END?' · View extends to '+fmtDate(d[1])+' for newer events':'')+' · Ratio (log) scale';
+    document.getElementById("market-data-status").textContent='Market data through '+fmtDate(DATA_END)+' · Monthly';
+    var latestEvent=events.reduce(function(a,b){return a[0]>b[0]?a:b;});
+    document.getElementById("latest-event-status").textContent='Latest event: '+latestEvent[2];
+    var atLatest=d[1]>=DATA_END-0.02, latestStatus=document.getElementById("latest-position-status");
+    latestStatus.hidden=!atLatest;latestStatus.textContent='At latest market data — '+fmtDate(DATA_END);
   }
   var listKey=null;
   function updateVisibleList(rows){
@@ -452,9 +470,11 @@
   }
   function updateExplorer(){updatePeriodStatus();}
   function zoomBy(f){var mid=(state.dom[0]+state.dom[1])/2,span=(state.dom[1]-state.dom[0])*f;span=Math.max(MINSPAN,Math.min(END-START,span));var left=Math.max(START,Math.min(mid-span/2,END-span));state.dom=[left,left+span];syncFrButtons();render();}
+  var zoomLabel=document.createElement("span");zoomLabel.className="lbl";zoomLabel.style.marginLeft="12px";zoomLabel.textContent="Zoom";cbox.appendChild(zoomLabel);
   mkBtn("+","Zoom in").addEventListener("click",function(){zoomBy(0.5);});
   mkBtn("−","Zoom out").addEventListener("click",function(){zoomBy(2);});
-  mkBtn("Reset view","Show full history").addEventListener("click",function(){state.dom=[START,END];syncFrButtons();render();});
+  mkBtn("Latest data","Move to the latest available market data").addEventListener("click",function(){var span=state.dom[1]-state.dom[0],right=Math.min(END,DATA_END+Math.min(0.18,span*0.04));state.dom=[Math.max(START,right-span),right];syncFrButtons();render();});
+  mkBtn("Reset zoom","Show full history").addEventListener("click",function(){state.dom=[START,END];syncFrButtons();render();});
 
   var curX,curY,curDomain,curSc,curI0; // closures updated per render, used by hover
 
@@ -541,10 +561,19 @@
         S.push('<text class="ax-strong" x="'+x.toFixed(1)+'" y="'+(pB+25)+'" text-anchor="middle">'+yr+'</text>');
     }
     var lEdge = curDomain[0]<=START+0.05 ? "1957" : fmtDate(curDomain[0]);
-    var rEdge = curDomain[1]>=END-0.05 ? "2026" : fmtDate(curDomain[1]);
+    var rEdge = fmtDate(curDomain[1]);
     SY.push('<text class="ax-strong" x="'+pL+'" y="'+(pB+25)+'" text-anchor="middle">'+lEdge+'</text>');
     SY.push('<text class="ax-strong" x="'+pR+'" y="'+(pB+25)+'" text-anchor="middle">'+rEdge+'</text>');
     SY.push('<line class="baseline" x1="'+pL+'" y1="'+pB+'" x2="'+pR+'" y2="'+pB+'"/>');
+
+    // Separate the last market observation from newer event-only space.
+    if(DATA_END>curDomain[0] && DATA_END<curDomain[1]){
+      var dataX=X(DATA_END);
+      S.push('<rect class="future-zone" x="'+dataX.toFixed(1)+'" y="'+pT+'" width="'+Math.max(0,pR-dataX).toFixed(1)+'" height="'+(pB-pT)+'"/>');
+      S.push('<line class="data-cutoff" x1="'+dataX.toFixed(1)+'" y1="'+pT+'" x2="'+dataX.toFixed(1)+'" y2="'+pB+'"/>');
+      S.push('<text class="ax-strong" x="'+(dataX-8).toFixed(1)+'" y="'+(pT+18)+'" text-anchor="end">Latest market data · '+fmtDate(DATA_END)+'</text>');
+      S.push('<text class="ax" x="'+(dataX+8).toFixed(1)+'" y="'+(pT+18)+'">Event-only period</text>');
+    }
 
     // area + lines
     S.push('<path d="'+pathOf(0)+' L'+X(times[di1]).toFixed(2)+' '+pB+' L'+X(times[di0]).toFixed(2)+' '+pB+' Z" fill="url(#eqfill)"/>');
@@ -556,10 +585,11 @@
     // by the plot column and never slide with the scene during a gesture)
     SY.push('<circle cx="'+X(curDomain[0]).toFixed(1)+'" cy="'+Y(sv(0,i0)).toFixed(1)+'" r="3.6" fill="var(--ink)"/>');
     if(state.rebase) SY.push('<text class="series-end" x="'+(X(curDomain[0])+8)+'" y="'+(Y(sv(0,i0))+20)+'" fill="var(--ink-soft)">'+(state.pct?"+0%":"$10,000")+'</text>');
+    var seriesEndX=X(times[i1]);
     [["var(--eq)",0],["var(--bond)",1],["var(--cash)",2]].forEach(function(p){
       var ey=Y(sv(p[1],i1));
-      SY.push('<circle cx="'+pR.toFixed(1)+'" cy="'+ey.toFixed(1)+'" r="4.5" fill="'+p[0]+'"/>');
-      SY.push('<text class="series-end" x="'+(pR+12)+'" y="'+(ey+4).toFixed(1)+'" fill="'+p[0]+'">'+disp(sv(p[1],i1))+'</text>');
+      SY.push('<circle cx="'+seriesEndX.toFixed(1)+'" cy="'+ey.toFixed(1)+'" r="4.5" fill="'+p[0]+'"/>');
+      SY.push('<text class="series-end" x="'+(seriesEndX+12).toFixed(1)+'" y="'+(ey+4).toFixed(1)+'" fill="'+p[0]+'">'+disp(sv(p[1],i1))+'</text>');
     });
 
     // legend
@@ -604,7 +634,7 @@
     var placed=[], layer=[];
     function ov(a,b){return !(a.x1<b.x0||a.x0>b.x1||a.y1<b.y0||a.y0>b.y1);}
     vis.sort(function(a,b){return a===selectedEvent?-1:b===selectedEvent?1:a[0]-b[0];}).forEach(function(e){
-      var ex=X(e[0]), ay=Y(eqAnchor(e[0]));
+      var ex=X(e[0]), hasMarketData=e[0]<=DATA_END+1e-9, ay=hasMarketData?Y(eqAnchor(e[0])):pT+70;
       var tw=Math.max(e[1].replace(/&[a-z]+;/g,'xx').length,e[2].length)*6.05;
       // the medallion; for a VISIBLE event, nudge it left just enough that its
       // (always right-side) label stays fully on screen
@@ -619,8 +649,10 @@
       placed.push({x0:b0-3,x1:b1+3,y0:iy-13,y1:iy+15});
       var col="var(--policy)";
       layer.push('<g role="button" tabindex="0" data-event="'+e[6].id+'" aria-label="'+escapeText(plain(e[1])+'; '+e[2]+'. Open event details')+'" style="cursor:pointer">');
-      layer.push('<line x1="'+mx.toFixed(1)+'" y1="'+(iy+11).toFixed(1)+'" x2="'+ex.toFixed(1)+'" y2="'+(ay-4).toFixed(1)+'" stroke="'+col+'" stroke-width="1" stroke-opacity="0.30"/>');
-      layer.push('<circle cx="'+ex.toFixed(1)+'" cy="'+ay.toFixed(1)+'" r="3.3" fill="'+col+'" stroke="var(--panel)" stroke-width="1.4"/>');
+      if(hasMarketData){
+        layer.push('<line x1="'+mx.toFixed(1)+'" y1="'+(iy+11).toFixed(1)+'" x2="'+ex.toFixed(1)+'" y2="'+(ay-4).toFixed(1)+'" stroke="'+col+'" stroke-width="1" stroke-opacity="0.30"/>');
+        layer.push('<circle cx="'+ex.toFixed(1)+'" cy="'+ay.toFixed(1)+'" r="3.3" fill="'+col+'" stroke="var(--panel)" stroke-width="1.4"/>');
+      }
       layer.push('<rect x="'+b0.toFixed(1)+'" y="'+(iy-14).toFixed(1)+'" width="'+(b1-b0).toFixed(1)+'" height="29" rx="4" fill="var(--halo)" fill-opacity="0.95"/>');
       layer.push('<text class="evt-label" x="'+tx.toFixed(1)+'" y="'+(iy-1).toFixed(1)+'">'+e[1]+'</text>');
       layer.push('<text class="evt-date" x="'+tx.toFixed(1)+'" y="'+(iy+12).toFixed(1)+'">'+e[2]+'</text>');
