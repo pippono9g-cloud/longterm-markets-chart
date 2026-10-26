@@ -27,7 +27,7 @@ Dates and importance are editorial. Thai summaries are editorial explanations of
 
 The 1988 recovery card adds Federal Reserve economic context; its title avoids an unverified claim that most losses were recovered. Fannie/Freddie conservatorship is corrected from July to September 2008 using FHFA.
 Annotations provide context, not proof of causation. Existing historical return inputs are unchanged.
-Stocks use the S&P 500 monthly average of daily closes, excluding dividends; cash compounds 3-month Treasury-bill rates.
+Stocks use the S&P 500 monthly average of daily closes, excluding dividends; cash compounds 3-month Treasury-bill rates; gold is the XAU/USD monthly average (row index 5, official ~$35 peg before 1968, price return only).
 Bonds use AGG total returns from 2003, VBMFX for 1987–2003, and a yield model before that.
 These series are not on an identical income basis. See the chart footnote for methodology.
 
@@ -35,7 +35,7 @@ These series are not on an identical income basis. See the chart footnote for me
 
 The Codex weekly task checks for a complete new calendar month every Monday at 10:00
 Asia/Bangkok. It updates performance only after all inputs are available: the S&P 500
-monthly average from FRED, TB3MS and GS10 monthly rates from FRED, and AGG monthly
+monthly average from FRED, XAU/USD monthly average (World Gold Council/LBMA), TB3MS and GS10 monthly rates from FRED, and AGG monthly
 total return from a consistent pair of month-end prices plus iShares distributions
 (or verified adjusted close data). It does not append a partial current month.
 Update `series.json`, then replace the embedded `series-data` JSON in `index.html`
