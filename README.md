@@ -1,6 +1,6 @@
 # Stocks, Bonds & Cash Over the Long Run
 
-Interactive historical chart with monthly data through September 2026.
+Interactive historical chart with monthly data through October 2026.
 
 Live: https://pippono9g-cloud.github.io/longterm-markets-chart/
 
@@ -59,3 +59,11 @@ and [AGG historical closes](https://www.financecharts.com/etfs/AGG/summary/price
 
 Run `pnpm install` then `pnpm test` for DOM-based interaction and data consistency checks.
 These checks do not replace visual browser or real-device testing.
+
+## October 2026 refresh (verified 9 November 2026)
+
+- S&P 500 monthly average: **7,726.69**, [FRED](https://fred.stlouisfed.org/graph/?g=1CZKn).
+- TB3MS: **4.05%**, [FRED](https://fred.stlouisfed.org/series/TB3MS); GS10: **5.13%**, [FRED](https://fred.stlouisfed.org/series/GS10).
+- AGG adjusted closes: **93.87** on September 30 and **96.02** on October 30 (last trading day). Factor `96.02 / 93.87 = 1.022904` after rounding to six decimals. Both endpoints verified against [Stock Analysis](https://stockanalysis.com/etf/agg/history/) and [FinancialContent](https://www.financialcontent.com/quote/NY:AGG/historical), accessed November 9. These are dividend-adjusted prices; no distribution is added again. Published prices have cent precision.
+- Gold monthly average: **$4,105/troy oz**, [World Bank November 2026 Pink Sheet, page 2](https://thedocs.worldbank.org/en/doc/74e8be41ceb20fa0da750cda2f6b9e4e-0050012026/related/CMO-Pink-Sheet-November-2026.pdf). This primary-source fallback is explicitly disclosed because the World Gold Council workbook returned HTTP 403. Historical rows are unchanged.
+- No incomplete November data or new events added. The former sibling `/Users/pippono/dev/longterm-stock-bond-cash` is absent on this machine, so synchronization was limited to this canonical deployment repository.

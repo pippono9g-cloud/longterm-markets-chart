@@ -79,9 +79,15 @@ console.log('PASS: plain mouse-wheel zoom, live visible-period count, persistent
 click(btn('Clear'));click(btn('5Y'));query('Lehman');assert.equal(document.querySelectorAll('.event-item').length,1);click(document.querySelector('.event-item'));settle();const searchedRange=currentRange();assert(searchedRange[0]<2008.8&&searchedRange[1]>2008.6);
 console.log('PASS: list IDs match the visible range during wheel/pinch, and global search pans to an event outside the current period.');
 
-// Events newer than the latest monthly series keep every unavailable horizon blank.
+// New monthly data may mature some horizons; later horizons must remain blank.
 click(btn('Reset zoom'));query('Fed raises rates after the easing cycle');assert.equal(document.querySelectorAll('.event-item').length,1);click(document.querySelector('.event-item'));
 assert.equal(document.querySelectorAll('.perf-item strong').length,4);
-assert([...document.querySelectorAll('.perf-item strong')].every(el=>el.textContent==='–'));
-assert(document.getElementById('event-detail').textContent.includes('Follow-up data is not available yet.'));
+const latestSeries=JSON.parse(document.getElementById('series-data').textContent);
+assert.deepEqual(latestSeries,JSON.parse(fs.readFileSync(require('path').join(__dirname,'../series.json'),'utf8')));
+const fedEvent=eventData.find(e=>e[1].includes('Fed raises rates after the easing cycle'));
+const elapsed=Math.round((latestSeries.at(-1)[0]-fedEvent[0])*12);
+[...document.querySelectorAll('.perf-item strong')].forEach((el,i)=>{
+  assert.equal(el.textContent==='–',elapsed<[1,3,6,12][i]);
+});
+if(elapsed<1)assert(document.getElementById('event-detail').textContent.includes('Follow-up data is not available yet.'));
 console.log('PASS: latest Fed event is present and incomplete performance horizons display en dashes.');
