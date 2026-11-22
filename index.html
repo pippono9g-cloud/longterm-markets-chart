@@ -44,6 +44,23 @@
   .tf-btn.grp[aria-pressed="false"]{opacity:1;background:#fff;color:#4d4d4d}
   .tf-btn.grp-all{font-size:11px;padding:4px 10px;border-color:var(--scb);color:var(--scb)}
   .tf-btn.grp-all:hover{background:var(--scb-l)}
+  /* Events filter: checkbox drop-down, same look as the Risk & Return Sub-category multi-select */
+  .ms-wrap{position:relative;display:inline-block}
+  .ms-btn{font:inherit;font-size:12.5px;padding:7px 10px;border:1px solid var(--hair);border-radius:7px;background:#fff;color:var(--ink);cursor:pointer;min-width:170px;text-align:left;display:inline-flex;align-items:center;justify-content:space-between;gap:8px}
+  .ms-btn::after{content:"\25BC";font-size:9px;color:var(--ink-mute)}
+  .ms-btn.has-sel{border-color:var(--scb);color:var(--scb);font-weight:700}
+  .ms-panel{display:none;position:absolute;top:calc(100% + 4px);left:0;z-index:200;width:320px;max-width:90vw;background:#fff;border:1px solid var(--hair);border-radius:8px;box-shadow:0 6px 22px rgba(13,30,60,.10)}
+  .ms-panel.open{display:block}
+  .ms-list{max-height:260px;overflow-y:auto;padding:4px 0}
+  .ms-all{display:block;font:inherit;font-size:11.5px;font-weight:700;color:var(--scb);background:none;border:0;padding:5px 12px;cursor:pointer}
+  .ms-item{display:flex;align-items:center;gap:8px;padding:5px 12px;font-size:12.5px;font-weight:700;cursor:pointer}
+  .ms-item:hover{background:#f0fafe}.ms-item input{margin:0;accent-color:var(--scb)}
+  #event-tools .ms-item input{flex:none;width:16px;height:16px;min-width:0;min-height:0;padding:0;border:0;border-radius:0;margin:0}
+  .ms-item .ms-n{color:var(--ink-mute);font-size:11px;font-weight:700;margin-left:auto;padding-left:8px}
+  .ms-actions{display:flex;justify-content:space-between;gap:8px;padding:8px 10px;border-top:1px solid var(--grid)}
+  .ms-actions button{font:inherit;font-size:11.5px;padding:5px 11px;border:1px solid var(--hair);border-radius:7px;background:#fff;cursor:pointer;color:var(--ink-soft)}
+  .ms-actions .ms-apply{border-color:var(--scb);color:var(--scb);font-weight:700}
+  .ms-actions button:hover{border-color:var(--scb);color:var(--ink)}
   .yr-in{font:inherit;font-size:12.5px;font-weight:700;width:56px;text-align:center;color:var(--ink);
     border:1.5px solid var(--ink);border-radius:8px;padding:4px 6px;background:#fff}
   .yr-in::placeholder{color:var(--ink-mute);font-weight:400}
@@ -120,7 +137,7 @@
       <span id="latest-position-status" class="status-pill at-latest" hidden></span>
     </div>
     <p id="view-summary" class="view-summary"></p>
-    <p class="help">Choose event categories below, or search events across the full history. Selecting a search result moves the chart to that event. Drag to pan · Scroll or pinch to zoom. Returns restart at the visible period’s beginning.</p>
+    <p class="help">Choose event categories from the Events menu, or search events across the full history. Selecting a search result moves the chart to that event. Drag to pan · Scroll or pinch to zoom. Returns restart at the visible period’s beginning.</p>
     <figure>
       <div class="chart-scroll">
         <svg id="chart" viewBox="0 0 1760 780" role="img"
@@ -350,34 +367,48 @@
   });
   paintUnit();
 
-  // ---- "Events" category filter — toggle chips to hunt for one kind of event ----
-  var s2=document.createElement("span");s2.className="lbl";s2.style.marginLeft="12px";s2.textContent="Events";cbox.appendChild(s2);
-  var grpBtns=GROUPS.map(function(g){
-    var b=mkBtn("");b.classList.add("grp");
-    b.innerHTML=g.label;b.title="Show / hide "+g.label.replace(/&amp;/g,"&")+" events";
-    b.setAttribute("aria-pressed","false");
-    b.addEventListener("click",function(){
-      state.gset[g.id]=!state.gset[g.id];
-      syncGrpBtns(); render(); updateExplorer();
-    });
-    return b;
+  // ---- "Events" category filter — checkbox drop-down with Clear / Check Selection (same pattern as the Risk & Return Sub-category filter); every category ticked by default ----
+  var evWrap=document.createElement("div");evWrap.className="ms-wrap";
+  var evBtn=document.createElement("button");evBtn.type="button";evBtn.className="ms-btn";evBtn.setAttribute("aria-haspopup","true");evBtn.setAttribute("aria-expanded","false");
+  var evPanel=document.createElement("div");evPanel.className="ms-panel";evPanel.setAttribute("role","group");evPanel.setAttribute("aria-label","Event categories");
+  var evList=document.createElement("div");evList.className="ms-list";
+  var grpAll=document.createElement("button");grpAll.type="button";grpAll.className="ms-all";grpAll.textContent="Select all";
+  evList.appendChild(grpAll);
+  var grpChecks=GROUPS.map(function(g){
+    var row=document.createElement("label");row.className="ms-item";
+    var cb=document.createElement("input");cb.type="checkbox";cb.checked=!!state.gset[g.id];
+    var sp=document.createElement("span");sp.className="ms-t";sp.innerHTML=g.label;
+    var n=document.createElement("span");n.className="ms-n";n.textContent=events.filter(function(e){return e[6].groups.indexOf(g.id)>-1;}).length;
+    row.appendChild(cb);row.appendChild(sp);row.appendChild(n);evList.appendChild(row);
+    return cb;
   });
-  var grpAll=mkBtn("Select all");grpAll.classList.add("grp-all");
-  var grpClear=mkBtn("Clear");grpClear.classList.add("grp-all");
-  grpAll.addEventListener("click",function(){GROUPS.forEach(function(g){state.gset[g.id]=true;});syncGrpBtns();render();updateExplorer();});
-  grpClear.addEventListener("click",function(){GROUPS.forEach(function(g){state.gset[g.id]=false;});search.value="";syncGrpBtns();render();updateExplorer();});
+  var evAct=document.createElement("div");evAct.className="ms-actions";
+  var grpClear=document.createElement("button");grpClear.type="button";grpClear.textContent="Clear";
+  var evApply=document.createElement("button");evApply.type="button";evApply.className="ms-apply";evApply.textContent="Check Selection";
+  evAct.appendChild(grpClear);evAct.appendChild(evApply);
+  evPanel.appendChild(evList);evPanel.appendChild(evAct);evWrap.appendChild(evBtn);evWrap.appendChild(evPanel);
+  function setEvOpen(o){
+    if(o)GROUPS.forEach(function(g,i){grpChecks[i].checked=!!state.gset[g.id];});   // start from the applied selection
+    evPanel.classList.toggle("open",o);evBtn.setAttribute("aria-expanded",String(o));
+  }
+  evBtn.addEventListener("click",function(e){e.stopPropagation();setEvOpen(!evPanel.classList.contains("open"));});
+  evPanel.addEventListener("click",function(e){e.stopPropagation();});
+  document.addEventListener("click",function(){setEvOpen(false);});
+  document.addEventListener("keydown",function(e){if(e.key==="Escape")setEvOpen(false);});
+  grpAll.addEventListener("click",function(){GROUPS.forEach(function(g,i){state.gset[g.id]=true;grpChecks[i].checked=true;});syncGrpBtns();render();updateExplorer();});
+  grpClear.addEventListener("click",function(){grpChecks.forEach(function(cb){cb.checked=false;});});
+  evApply.addEventListener("click",function(){GROUPS.forEach(function(g,i){state.gset[g.id]=grpChecks[i].checked;});search.value="";syncGrpBtns();render();updateExplorer();setEvOpen(false);});
   function syncGrpBtns(){
-    grpBtns.forEach(function(b,i){b.setAttribute("aria-pressed",String(state.gset[GROUPS[i].id]));});
-    grpAll.setAttribute("aria-pressed",String(GROUPS.every(function(g){return state.gset[g.id];})));
-    grpClear.setAttribute("aria-pressed",String(GROUPS.every(function(g){return !state.gset[g.id];})));
+    var n=0;GROUPS.forEach(function(g){if(state.gset[g.id])n++;});
+    evBtn.textContent=n===GROUPS.length?"All events":n===0?"No events selected":n+" of "+GROUPS.length+" selected";
+    evBtn.classList.toggle("has-sel",n<GROUPS.length);
+    evBtn.title="Choose which kinds of events to show";
   }
   syncGrpBtns();
   var search=document.createElement("input");search.type="search";search.placeholder="Search all history — Lehman, COVID, inflation…";search.setAttribute("aria-label","Search events across all history");
   var level=document.createElement("select");level.setAttribute("aria-label","Event detail level");level.innerHTML='<option value="all">All matching events</option><option value="major">Major events only</option>';
-  var eventTools=document.getElementById("event-tools");eventTools.appendChild(search);eventTools.appendChild(level);
-  var categoryRow=document.createElement("div");categoryRow.className="controls";categoryRow.setAttribute("role","group");categoryRow.setAttribute("aria-label","Event categories");
-  categoryRow.appendChild(s2);grpBtns.forEach(function(b){categoryRow.appendChild(b);});categoryRow.appendChild(grpAll);categoryRow.appendChild(grpClear);
-  var figure=document.querySelector("figure");figure.before(categoryRow);figure.before(eventTools);
+  var eventTools=document.getElementById("event-tools");eventTools.appendChild(evWrap);eventTools.appendChild(search);eventTools.appendChild(level);
+  var figure=document.querySelector("figure");figure.before(eventTools);
   search.addEventListener("input",function(){render();updateExplorer();});level.addEventListener("change",function(){render();updateExplorer();});
   function plain(s){var t=document.createElement("textarea");t.innerHTML=s;return t.value;}
   function escapeText(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
