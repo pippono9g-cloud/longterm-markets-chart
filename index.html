@@ -372,8 +372,7 @@
   var evBtn=document.createElement("button");evBtn.type="button";evBtn.className="ms-btn";evBtn.setAttribute("aria-haspopup","true");evBtn.setAttribute("aria-expanded","false");
   var evPanel=document.createElement("div");evPanel.className="ms-panel";evPanel.setAttribute("role","group");evPanel.setAttribute("aria-label","Event categories");
   var evList=document.createElement("div");evList.className="ms-list";
-  var grpAll=document.createElement("button");grpAll.type="button";grpAll.className="ms-all";grpAll.textContent="Select all";
-  evList.appendChild(grpAll);
+  var grpAll=document.createElement("button");grpAll.type="button";grpAll.textContent="Select all";
   var grpChecks=GROUPS.map(function(g){
     var row=document.createElement("label");row.className="ms-item";
     var cb=document.createElement("input");cb.type="checkbox";cb.checked=!!state.gset[g.id];
@@ -384,8 +383,8 @@
   });
   var evAct=document.createElement("div");evAct.className="ms-actions";
   var grpClear=document.createElement("button");grpClear.type="button";grpClear.textContent="Clear";
-  var evApply=document.createElement("button");evApply.type="button";evApply.className="ms-apply";evApply.textContent="Check Selection";
-  evAct.appendChild(grpClear);evAct.appendChild(evApply);
+  var evApply=document.createElement("button");evApply.type="button";evApply.className="ms-apply";evApply.textContent="Apply";
+  evAct.appendChild(grpClear);evAct.appendChild(evApply);evAct.appendChild(grpAll);
   evPanel.appendChild(evList);evPanel.appendChild(evAct);evWrap.appendChild(evBtn);evWrap.appendChild(evPanel);
   function setEvOpen(o){
     if(o)GROUPS.forEach(function(g,i){grpChecks[i].checked=!!state.gset[g.id];});   // start from the applied selection
