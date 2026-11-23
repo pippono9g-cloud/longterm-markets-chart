@@ -39,6 +39,37 @@
   .tf-btn.switch b,.tf-btn.switch span{padding:3px 11px;border-radius:999px;font-size:12.5px;line-height:1.35;font-weight:700}
   .tf-btn.switch b{background:var(--ink);color:#fff}
   .tf-btn.switch span{color:var(--ink-mute);font-weight:600}
+  /* unified switch theme (matches the Insight Hub pages) */
+  #controls .tf-btn{font-size:12px;padding:5px 12px;border:1.5px solid #B8C2CF;border-radius:8px;color:#056DAE;background:#fff}
+  #controls .tf-btn:hover{background:var(--scb-l);color:#056DAE}
+  #controls .seg{display:inline-flex;gap:2px;padding:3px;border:1.5px solid #B8C2CF;border-radius:9px;background:#fff}
+  #controls .seg .tf-btn{border:none;background:transparent;border-radius:6px;padding:4px 12px}
+  #controls .seg .tf-btn:hover{background:var(--scb-l)}
+  #controls .seg .tf-btn[aria-pressed="true"]{background:#002B5C;color:#fff}
+  #controls .tf-btn.switch{padding:3px;gap:2px;border-radius:9px;background:#fff}
+  #controls .tf-btn.switch b,#controls .tf-btn.switch span{padding:4px 12px;border-radius:6px;font-size:12px;line-height:1.35}
+  #controls .tf-btn.switch b{background:#002B5C;color:#fff}
+  #controls .tf-btn.switch span{color:#056DAE;font-weight:700}
+  .yr-in{border-color:#B8C2CF !important;border-radius:8px !important;font-size:12px !important}
+  .par-head{position:relative;height:0;margin:8px 0 22px;border-top:1px solid var(--hair)}
+  .par-label{position:absolute;left:0;top:-9px;padding-right:8px;background:#fff;font-size:12px;font-weight:700;color:var(--ink-mute);text-transform:uppercase;letter-spacing:.04em}
+  .par-toggle{position:absolute;right:0;top:-12px;width:24px;height:24px;border-radius:50%;border:1px solid var(--hair);background:#fff;color:#007BB0;font-weight:700;cursor:pointer;font-size:13px;line-height:1;display:flex;align-items:center;justify-content:center;padding:0}
+  .par-toggle:hover{border-color:#00A3D9}
+  /* one common control height */
+  #controls .tf-btn,#controls .seg,#controls .yr-in{box-sizing:border-box;height:32px;min-height:0 !important}
+  #controls .tf-btn{display:inline-flex;align-items:center;justify-content:center;padding-top:0;padding-bottom:0}
+  #controls .seg{align-items:stretch}
+  #controls .seg .tf-btn{height:100%;padding-top:0;padding-bottom:0}
+  #controls .tf-btn.switch{align-items:stretch}
+  #controls .tf-btn.switch b,#controls .tf-btn.switch span{display:inline-flex;align-items:center;padding-top:0;padding-bottom:0}
+  #controls .yr-in{padding-top:0;padding-bottom:0}
+  /* event tools: same height / border / font as the parameter controls */
+  #event-tools .ms-btn,#event-tools input,#event-tools select{box-sizing:border-box;height:32px;min-height:0 !important;font-size:12px !important;padding-top:0 !important;padding-bottom:0 !important;border:1.5px solid #B8C2CF !important;border-radius:8px !important;background-color:#fff}
+  #event-tools .ms-btn{padding-left:10px;padding-right:10px;color:#1a1a1a;font-weight:400}
+  #event-tools .ms-btn.has-sel{border-color:#056DAE;color:#056DAE;font-weight:700}
+  #event-tools input{padding-left:12px !important;padding-right:12px !important}
+  #event-tools select{appearance:none;-webkit-appearance:none;padding-left:10px !important;padding-right:28px !important;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='6'%3E%3Cpath d='M0 0h9L4.5 6z' fill='%23666'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center}
   .tf-btn.grp{font-size:11px;font-weight:700;padding:4px 10px;border-width:1.5px;border-color:var(--hair);color:var(--ink-mute)}
   .tf-btn.grp[aria-pressed="true"]{background:var(--soft);border-color:var(--ink);color:var(--ink)}
   .tf-btn.grp[aria-pressed="false"]{opacity:1;background:#fff;color:#4d4d4d}
@@ -66,10 +97,10 @@
   .yr-in::placeholder{color:var(--ink-mute);font-weight:400}
   .yr-in:focus-visible{outline:2px solid var(--scb);outline-offset:1px}
   .controls .dash{color:var(--ink-mute);font-weight:700;margin:0 -2px}
-  .data-status{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0 4px;align-items:center}
-  .status-pill{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--hair);border-radius:999px;padding:5px 10px;background:var(--soft);color:var(--ink-soft);font-size:11.5px;font-weight:700}
-  .status-pill.event{background:#fff;color:var(--scb);border-color:var(--scb)}
-  .status-pill.at-latest{background:#eef8f2;color:#16734a;border-color:#a8d7ba}
+  .data-status{display:flex;flex-wrap:wrap;gap:0 7px;margin:10px 0 4px;align-items:center;font-size:12px;color:var(--ink-mute)}
+  .status-pill{display:inline;font-size:12px;font-weight:600;color:var(--ink-mute)}
+  .status-pill[hidden]{display:none}
+  .status-pill:not(:first-child):not([hidden])::before{content:"\00B7";margin-right:7px}
   figure{margin:12px 0 0;position:relative;touch-action:none}
   svg{display:block;width:100%;height:auto;overflow:visible;touch-action:none;cursor:crosshair;
     -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
@@ -127,6 +158,7 @@
   </div>
 
   <div class="card">
+    <div class="par-head"><span class="par-label">Parameters</span><button class="par-toggle" id="par-toggle" type="button" title="Hide parameters" aria-expanded="true">▾</button></div>
     <div class="controls" id="controls">
       <span class="lbl">Time frame</span>
     </div>
@@ -300,9 +332,14 @@
   function mkBtn(txt,title){var b=document.createElement("button");b.className="tf-btn";b.type="button";
     b.textContent=txt;if(title)b.title=title;b.setAttribute("aria-pressed","false");cbox.appendChild(b);return b;}
 
+  (function(){var t=document.getElementById("par-toggle");
+    t.addEventListener("click",function(){var h=cbox.style.display!=="none";
+      cbox.style.display=h?"none":"";t.textContent=h?"▴":"▾";
+      t.title=h?"Show parameters":"Hide parameters";t.setAttribute("aria-expanded",String(!h));});})();
   // time-frame buttons
+  var frSeg=document.createElement("span");frSeg.className="seg";cbox.appendChild(frSeg);
   var frButtons=FRAMES.map(function(f,i){
-    var b=mkBtn(f.k);
+    var b=mkBtn(f.k);frSeg.appendChild(b);
     if(i===0)b.setAttribute("aria-pressed","true");
     b.addEventListener("click",function(){state.fi=i;
       state.dom=[Math.max(START,END-f.yrs),END];
